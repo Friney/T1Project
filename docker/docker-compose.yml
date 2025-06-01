@@ -1,0 +1,20 @@
+services:
+  t1_postgres:
+    image: postgres:17.5
+    restart: always
+    ports:
+      - "5434:5432"
+    volumes:
+      - t1_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: t1_demo
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+volumes:
+  t1_postgres_data:
