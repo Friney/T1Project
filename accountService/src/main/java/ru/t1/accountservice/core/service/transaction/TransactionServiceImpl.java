@@ -14,12 +14,14 @@ import ru.t1.accountservice.core.entity.transaction.Transaction;
 import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.mapper.TransactionMapper;
 import ru.t1.accountservice.core.repository.TransactionRepository;
+import ru.t1.accountservice.core.service.account.AccountService;
 
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final AccountService accountService;
     private final TransactionMapper transactionMapper;
 
 
@@ -35,16 +37,12 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionMapper.map(getEntityById(id, accountId));
     }
 
-
-    @Transactional(readOnly = true)
-    protected Transaction getEntityById(long id, long accountId) {
-        return transactionRepository.findByIdAndAccountId(id, accountId)
-                .orElseThrow(() -> new ServiceException("Transaction with id " + id + " not found for account with id " + accountId, HttpStatus.NOT_FOUND));
-    }
-
     @Override
     @Transactional
     public TransactionDto create(TransactionCreateRequest transactionCreateRequest, long accountId) {
+        if (!accountService.existsById(accountId)) {
+            throw new ServiceException("Account with id " + accountId + " not found", HttpStatus.NOT_FOUND);
+        }
         Account account = Account.builder()
                 .id(accountId)
                 .build();
@@ -76,5 +74,11 @@ public class TransactionServiceImpl implements TransactionService {
     public void delete(long id, long accountId) {
         getEntityById(id, accountId);
         transactionRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    protected Transaction getEntityById(long id, long accountId) {
+        return transactionRepository.findByIdAndAccountId(id, accountId)
+                .orElseThrow(() -> new ServiceException("Transaction with id " + id + " not found for account with id " + accountId, HttpStatus.NOT_FOUND));
     }
 }

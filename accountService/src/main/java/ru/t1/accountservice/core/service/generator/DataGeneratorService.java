@@ -29,10 +29,6 @@ public class DataGeneratorService {
     private final TransactionService transactionService;
     private final Faker faker = new Faker();
 
-    private final int MIN_CLIENTS = 10;
-    private final int MIN_ACCOUNTS = 10;
-    private final int MIN_TRANSACTIONS = 10;
-
     @EventListener(ApplicationReadyEvent.class)
     public void generateDataIfNeeded() {
         List<ClientDto> clients = clientService.getAll();
@@ -52,7 +48,8 @@ public class DataGeneratorService {
     }
 
     private void generateClientsIfNeeded(List<ClientDto> clients) {
-        int clientsToGenerate = MIN_CLIENTS - clients.size();
+        int minClients = 10;
+        int clientsToGenerate = minClients - clients.size();
         for (int i = 0; i < clientsToGenerate; i++) {
             ClientCreateRequest request = new ClientCreateRequest(
                     faker.name().firstName(),
@@ -65,8 +62,9 @@ public class DataGeneratorService {
     }
 
     private void generateAccountsIfNeeded(List<ClientDto> clients, List<AccountDto> accounts) {
+        int minAccounts = 10;
         AccountType[] accountTypes = AccountType.values();
-        int accountsToGenerate = MIN_ACCOUNTS - accounts.size();
+        int accountsToGenerate = minAccounts - accounts.size();
         for (int i = 0; i < accountsToGenerate; i++) {
             ClientDto randomClient = clients.get(faker.random().nextInt(clients.size()));
             AccountType randomType = accountTypes[faker.random().nextInt(accountTypes.length)];
@@ -81,15 +79,16 @@ public class DataGeneratorService {
 
 
     private void generateTransactionsIfNeeded(List<AccountDto> accounts) {
+        int minTransactions = 10;
         int transactionCount = 0;
         for (AccountDto account : accounts) {
             transactionCount += transactionService.getAll(account.id()).size();
-            if (transactionCount >= MIN_TRANSACTIONS) {
+            if (transactionCount >= minTransactions) {
                 break;
             }
         }
 
-        int transactionsToGenerate = MIN_TRANSACTIONS - transactionCount;
+        int transactionsToGenerate = minTransactions - transactionCount;
         for (int i = 0; i < transactionsToGenerate; i++) {
             if (!accounts.isEmpty()) {
                 AccountDto randomAccount = accounts.get(faker.random().nextInt(accounts.size()));

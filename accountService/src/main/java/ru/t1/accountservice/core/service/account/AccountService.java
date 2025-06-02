@@ -16,4 +16,6 @@ public interface AccountService {
     AccountDto update(AccountUpdateRequest accountUpdateRequest, long id, long clientId);
 
     void delete(long id, long clientId);
+
+    Boolean existsById(long id);
 }

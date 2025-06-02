@@ -17,4 +17,5 @@ public interface ClientService {
 
     void delete(long id);
 
+    Boolean existsById(long id);
 }

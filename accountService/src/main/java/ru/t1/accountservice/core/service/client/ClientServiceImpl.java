@@ -33,12 +33,6 @@ public class ClientServiceImpl implements ClientService {
         return clientMapper.map(getEntityById(id));
     }
 
-    @Transactional(readOnly = true)
-    protected Client getEntityById(long id) {
-        return clientRepository.findById(id).
-                orElseThrow(() -> new ServiceException("Client with id " + id + " not found", HttpStatus.NOT_FOUND));
-    }
-
     @Override
     @Transactional
     public ClientDto create(ClientCreateRequest clientCreateRequest) {
@@ -59,16 +53,28 @@ public class ClientServiceImpl implements ClientService {
         return clientMapper.map(clientRepository.save(client));
     }
 
-    private void updateClientFields(Client client, ClientUpdateRequest clientUpdateRequest) {
-        Optional.ofNullable(clientUpdateRequest.firstName()).ifPresent(client::setFirstName);
-        Optional.ofNullable(clientUpdateRequest.middleName()).ifPresent(client::setMiddleName);
-        Optional.ofNullable(clientUpdateRequest.lastName()).ifPresent(client::setLastName);
-    }
 
     @Override
     @Transactional
     public void delete(long id) {
         getEntityById(id);
         clientRepository.deleteById(id);
+    }
+
+    @Override
+    public Boolean existsById(long id) {
+        return clientRepository.existsById(id);
+    }
+
+    @Transactional(readOnly = true)
+    protected Client getEntityById(long id) {
+        return clientRepository.findById(id).
+                orElseThrow(() -> new ServiceException("Client with id " + id + " not found", HttpStatus.NOT_FOUND));
+    }
+
+    private void updateClientFields(Client client, ClientUpdateRequest clientUpdateRequest) {
+        Optional.ofNullable(clientUpdateRequest.firstName()).ifPresent(client::setFirstName);
+        Optional.ofNullable(clientUpdateRequest.middleName()).ifPresent(client::setMiddleName);
+        Optional.ofNullable(clientUpdateRequest.lastName()).ifPresent(client::setLastName);
     }
 }
