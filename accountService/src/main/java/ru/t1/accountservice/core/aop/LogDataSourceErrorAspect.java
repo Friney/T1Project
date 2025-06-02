@@ -1,8 +1,8 @@
 package ru.t1.accountservice.core.aop;
 
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.dao.DataAccessException;
@@ -18,9 +18,9 @@ public class LogDataSourceErrorAspect {
     private final DataSourceErrorLogService dataSourceErrorLogService;
 
     @AfterThrowing(value = "@annotation(ru.t1.accountservice.core.annotation.LogDataSourceError)", throwing = "e")
-    public void logDataSourceError(DataAccessException e) {
+    public void logDataSourceError(JoinPoint joinPoint, DataAccessException e) {
         try {
-            dataSourceErrorLogService.save(Arrays.toString(e.getStackTrace()), e.getMessage(), e.getMostSpecificCause().toString());
+            dataSourceErrorLogService.save(joinPoint.getSignature().toString(), e.getMessage(), e.getMostSpecificCause().toString());
         } catch (Exception ex) {
             log.error("Error while logging data source error -> {}", ex.getMessage());
         }
