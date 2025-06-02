@@ -1,5 +1,6 @@
 package ru.t1.accountservice.api.controller;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,13 +38,13 @@ public class ClientController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    ClientDto create(@RequestBody ClientCreateRequest clientCreateRequest) {
+    ClientDto create(@Valid @RequestBody ClientCreateRequest clientCreateRequest) {
         return clientService.create(clientCreateRequest);
     }
 
     @PatchMapping("{id}")
-    ClientDto update(@PathVariable Long id, @RequestBody ClientUpdateRequest clientUpdateRequest) {
-        return clientService.update(id, clientUpdateRequest);
+    ClientDto update(@Valid @RequestBody ClientUpdateRequest clientUpdateRequest, @PathVariable Long id) {
+        return clientService.update(clientUpdateRequest, id);
     }
 
     @DeleteMapping("{id}")

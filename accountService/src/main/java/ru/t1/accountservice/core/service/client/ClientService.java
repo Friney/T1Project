@@ -13,7 +13,7 @@ public interface ClientService {
 
     ClientDto create(ClientCreateRequest clientCreateRequest);
 
-    ClientDto update(long id, ClientUpdateRequest clientUpdateRequest);
+    ClientDto update(ClientUpdateRequest clientUpdateRequest, long id);
 
     void delete(long id);
 

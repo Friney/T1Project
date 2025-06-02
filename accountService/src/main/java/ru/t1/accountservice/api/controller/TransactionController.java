@@ -1,5 +1,6 @@
 package ru.t1.accountservice.api.controller;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,12 +38,12 @@ public class TransactionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    TransactionDto create(@RequestBody TransactionCreateRequest transactionCreateRequest, @PathVariable Long accountId) {
+    TransactionDto create(@Valid @RequestBody TransactionCreateRequest transactionCreateRequest, @PathVariable Long accountId) {
         return transactionService.create(transactionCreateRequest, accountId);
     }
 
     @PatchMapping("{id}")
-    TransactionDto update(@RequestBody TransactionUpdateRequest transactionUpdateRequest, @PathVariable Long id, @PathVariable Long accountId) {
+    TransactionDto update(@Valid @RequestBody TransactionUpdateRequest transactionUpdateRequest, @PathVariable Long id, @PathVariable Long accountId) {
         return transactionService.update(transactionUpdateRequest, id, accountId);
     }
 

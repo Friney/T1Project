@@ -50,7 +50,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     @LogDataSourceError
     @Transactional
-    public ClientDto update(long id, ClientUpdateRequest clientUpdateRequest) {
+    public ClientDto update(ClientUpdateRequest clientUpdateRequest, long id) {
         Client client = getEntityById(id);
         updateClientFields(client, clientUpdateRequest);
         return clientMapper.map(clientRepository.save(client));
