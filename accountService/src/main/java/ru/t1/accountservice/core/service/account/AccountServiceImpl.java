@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.t1.accountservice.api.dto.account.AccountCreateRequest;
 import ru.t1.accountservice.api.dto.account.AccountDto;
 import ru.t1.accountservice.api.dto.account.AccountUpdateRequest;
+import ru.t1.accountservice.core.annotation.Cached;
 import ru.t1.accountservice.core.annotation.LogDataSourceError;
+import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.account.Account;
 import ru.t1.accountservice.core.entity.client.Client;
 import ru.t1.accountservice.core.exception.ServiceException;
@@ -32,12 +34,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Cached(name = "account")
     @Transactional(readOnly = true)
     public AccountDto getById(long id, long clientId) {
         return accountMapper.map(getEntityById(id, clientId));
     }
 
     @Override
+    @Metric
     @LogDataSourceError
     @Transactional
     public AccountDto create(AccountCreateRequest accountCreateRequest, long clientId) {
@@ -58,6 +62,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Metric
     @LogDataSourceError
     @Transactional
     public AccountDto update(AccountUpdateRequest accountUpdateRequest, long id, long clientId) {
