@@ -1,5 +1,6 @@
 package ru.t1.accountservice.core.aop;
 
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -20,7 +21,7 @@ public class LogDataSourceErrorAspect {
     @AfterThrowing(value = "@annotation(ru.t1.accountservice.core.annotation.LogDataSourceError)", throwing = "e")
     public void logDataSourceError(JoinPoint joinPoint, DataAccessException e) {
         try {
-            dataSourceErrorLogService.save(joinPoint.getSignature().toString(), e.getMessage(), e.getMostSpecificCause().toString());
+            dataSourceErrorLogService.save(Arrays.toString(e.getStackTrace()), e.getMessage(), joinPoint.getSignature().toString());
         } catch (Exception ex) {
             log.error("Error while logging data source error -> {}", ex.getMessage());
         }
