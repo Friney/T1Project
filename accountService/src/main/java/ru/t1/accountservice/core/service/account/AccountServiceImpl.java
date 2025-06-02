@@ -38,8 +38,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @Transactional
     @LogDataSourceError
+    @Transactional
     public AccountDto create(AccountCreateRequest accountCreateRequest, long clientId) {
         if (!clientService.existsById(clientId)) {
             throw new ServiceException("Client with id " + clientId + " not found", HttpStatus.NOT_FOUND);
@@ -58,6 +58,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @LogDataSourceError
     @Transactional
     public AccountDto update(AccountUpdateRequest accountUpdateRequest, long id, long clientId) {
         Account account = getEntityById(id, clientId);
@@ -66,6 +67,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @LogDataSourceError
     @Transactional
     public void delete(long id, long clientId) {
         getEntityById(id, clientId);

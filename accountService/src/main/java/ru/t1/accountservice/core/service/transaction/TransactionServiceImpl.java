@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.t1.accountservice.api.dto.transaction.TransactionCreateRequest;
 import ru.t1.accountservice.api.dto.transaction.TransactionDto;
 import ru.t1.accountservice.api.dto.transaction.TransactionUpdateRequest;
+import ru.t1.accountservice.core.annotation.LogDataSourceError;
 import ru.t1.accountservice.core.entity.account.Account;
 import ru.t1.accountservice.core.entity.transaction.Transaction;
 import ru.t1.accountservice.core.exception.ServiceException;
@@ -38,6 +39,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @LogDataSourceError
     @Transactional
     public TransactionDto create(TransactionCreateRequest transactionCreateRequest, long accountId) {
         if (!accountService.existsById(accountId)) {
@@ -57,6 +59,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @LogDataSourceError
     @Transactional
     public TransactionDto update(TransactionUpdateRequest transactionUpdateRequest, long id, long accountId) {
         Transaction transaction = getEntityById(id, accountId);
@@ -70,6 +73,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @LogDataSourceError
     @Transactional
     public void delete(long id, long accountId) {
         getEntityById(id, accountId);
