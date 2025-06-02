@@ -17,5 +17,5 @@ public interface AccountService {
 
     void delete(long id, long clientId);
 
-    Boolean existsById(long id);
+    boolean existsById(long id);
 }

@@ -71,7 +71,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public Boolean existsById(long id) {
+    public boolean existsById(long id) {
         return clientRepository.existsById(id);
     }
 

@@ -80,7 +80,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Boolean existsById(long id) {
+    public boolean existsById(long id) {
         return accountRepository.existsById(id);
     }
 
