@@ -20,31 +20,41 @@ public class CachedAspect {
     @Value("${cache.ttl}")
     private Duration ttl;
 
-    private static final Map<NameAndArgs, CacheEntry> CACHE = new HashMap<>();
+    private final Map<NameAndArgs, CacheEntry> cache = new HashMap<>();
 
     @Around("@annotation(cached)")
     public Object cached(ProceedingJoinPoint proceedingJoinPoint, Cached cached) throws Throwable {
         long ttlMs = ttl.toMillis();
         String cacheName = cached.name();
 
+        long maxCacheSize = 1000;
+        if (cache.size() > maxCacheSize * 0.8) {
+            clearCacheForExpired();
+        }
+
         NameAndArgs nameAndArgs = new NameAndArgs(cacheName, Arrays.toString(proceedingJoinPoint.getArgs()));
-        if (CACHE.containsKey(nameAndArgs)) {
-            CacheEntry cacheEntry = CACHE.get(nameAndArgs);
+        if (cache.containsKey(nameAndArgs)) {
+            CacheEntry cacheEntry = cache.get(nameAndArgs);
             if (isCacheExpired(cacheEntry, ttlMs)) {
                 log.info("Cache return {} for {}", cacheEntry.value, nameAndArgs);
                 return cacheEntry.value;
             } else {
-                CACHE.remove(nameAndArgs);
+                cache.remove(nameAndArgs);
             }
         }
 
         return computeAndCacheValue(proceedingJoinPoint, nameAndArgs, ttlMs);
     }
 
+    private void clearCacheForExpired() {
+        cache.entrySet()
+                .removeIf(entry -> isCacheExpired(entry.getValue(), ttl.toMillis()));
+    }
+
     private Object computeAndCacheValue(ProceedingJoinPoint proceedingJoinPoint, NameAndArgs nameAndArgs, long ttlMs) throws Throwable {
         Object result = proceedingJoinPoint.proceed();
         log.info("Cache save {} for {}", result, nameAndArgs);
-        CACHE.put(nameAndArgs, new CacheEntry(System.currentTimeMillis(), result));
+        cache.put(nameAndArgs, new CacheEntry(System.currentTimeMillis(), result));
         return result;
     }
 
