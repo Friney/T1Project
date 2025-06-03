@@ -8,6 +8,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import ru.t1.accountservice.core.service.timelimit.TimeLimitExceedLogService;
 
@@ -15,6 +17,7 @@ import ru.t1.accountservice.core.service.timelimit.TimeLimitExceedLogService;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class MetricAspect {
 
     @Value("${metric.time-limit}")
