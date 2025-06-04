@@ -19,3 +19,4 @@ metric:
   time-limit: 70ms
 cache:
   ttl: 30m
+  max-size: 1000

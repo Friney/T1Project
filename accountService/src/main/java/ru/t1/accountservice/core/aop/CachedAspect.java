@@ -2,8 +2,8 @@ package ru.t1.accountservice.core.aop;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -20,14 +20,16 @@ public class CachedAspect {
     @Value("${cache.ttl}")
     private Duration ttl;
 
-    private final Map<NameAndArgs, CacheEntry> cache = new HashMap<>();
+    @Value("${cache.max-size}")
+    private long maxCacheSize;
+
+    private final Map<NameAndArgs, CacheEntry> cache = new ConcurrentHashMap<>();
 
     @Around("@annotation(cached)")
     public Object cached(ProceedingJoinPoint proceedingJoinPoint, Cached cached) throws Throwable {
         long ttlMs = ttl.toMillis();
         String cacheName = cached.name();
 
-        long maxCacheSize = 1000;
         if (cache.size() > maxCacheSize * 0.8) {
             clearCacheForExpired();
         }
