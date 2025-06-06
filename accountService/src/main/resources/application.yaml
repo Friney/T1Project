@@ -16,7 +16,7 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 metric:
-  time-limit: 1ms
+  time-limit: 70ms
 cache:
   ttl: 30m
   max-size: 1000
