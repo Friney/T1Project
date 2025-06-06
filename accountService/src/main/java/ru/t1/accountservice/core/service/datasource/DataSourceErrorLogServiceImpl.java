@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.t1.accountservice.api.dto.datasource.DataSourceErrorLogDto;
 import ru.t1.accountservice.core.entity.datasource.DataSourceErrorLog;
 import ru.t1.accountservice.core.repository.DataSourceErrorLogRepository;
 
@@ -15,11 +16,11 @@ public class DataSourceErrorLogServiceImpl implements DataSourceErrorLogService 
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void save(String stackTrace, String errorMessage, String methodSignature) {
+    public void save(DataSourceErrorLogDto dataSourceErrorLogDto) {
         DataSourceErrorLog dataSourceErrorLog = DataSourceErrorLog.builder()
-                .stackTrace(stackTrace)
-                .errorMessage(errorMessage)
-                .methodSignature(methodSignature)
+                .stackTrace(dataSourceErrorLogDto.stackTrace())
+                .errorMessage(dataSourceErrorLogDto.errorMessage())
+                .methodSignature(dataSourceErrorLogDto.methodSignature())
                 .build();
 
         dataSourceErrorLogRepository.save(dataSourceErrorLog);

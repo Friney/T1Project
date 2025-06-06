@@ -1,8 +1,8 @@
 package ru.t1.accountservice.core.service.timelimit;
 
-import java.time.LocalDateTime;
+import ru.t1.accountservice.api.dto.timelimit.TimeLimitExceedLogDto;
 
 public interface TimeLimitExceedLogService {
 
-    void save(String methodSignature, long executionTime, long timeLimit, LocalDateTime logTime);
+    void save(TimeLimitExceedLogDto timeLimitExceedLogDto);
 }

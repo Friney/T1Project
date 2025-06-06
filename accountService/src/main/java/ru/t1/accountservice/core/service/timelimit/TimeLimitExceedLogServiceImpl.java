@@ -1,10 +1,10 @@
 package ru.t1.accountservice.core.service.timelimit;
 
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.t1.accountservice.api.dto.timelimit.TimeLimitExceedLogDto;
 import ru.t1.accountservice.core.annotation.LogDataSourceError;
 import ru.t1.accountservice.core.entity.timelimit.TimeLimitExceedLog;
 import ru.t1.accountservice.core.repository.TimeLimitExceedLogRepository;
@@ -18,12 +18,12 @@ public class TimeLimitExceedLogServiceImpl implements TimeLimitExceedLogService 
     @Override
     @LogDataSourceError
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void save(String methodSignature, long executionTime, long timeLimit, LocalDateTime logTime) {
+    public void save(TimeLimitExceedLogDto timeLimitExceedLogDto) {
         TimeLimitExceedLog timeLimitExceedLog = TimeLimitExceedLog.builder()
-                .methodSignature(methodSignature)
-                .executionTime(executionTime)
-                .timeLimit(timeLimit)
-                .logTime(logTime)
+                .methodSignature(timeLimitExceedLogDto.methodSignature())
+                .executionTime(timeLimitExceedLogDto.executionTime())
+                .timeLimit(timeLimitExceedLogDto.timeLimit())
+                .logTime(timeLimitExceedLogDto.logTime())
                 .build();
 
         timeLimitExceedLogRepository.save(timeLimitExceedLog);
