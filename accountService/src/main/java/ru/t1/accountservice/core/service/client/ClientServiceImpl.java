@@ -42,7 +42,9 @@ public class ClientServiceImpl implements ClientService {
     @LogDataSourceError
     @Transactional
     public ClientDto create(ClientCreateRequest clientCreateRequest) {
+
         Client client = Client.builder()
+                .clientId(clientRepository.getNextClientId())
                 .firstName(clientCreateRequest.firstName())
                 .lastName(clientCreateRequest.lastName())
                 .middleName(clientCreateRequest.middleName())
@@ -67,17 +69,17 @@ public class ClientServiceImpl implements ClientService {
     @Transactional
     public void delete(long id) {
         getEntityById(id);
-        clientRepository.deleteById(id);
+        clientRepository.deleteByClientId(id);
     }
 
     @Override
     public boolean existsById(long id) {
-        return clientRepository.existsById(id);
+        return clientRepository.existsByClientId(id);
     }
 
     @Transactional(readOnly = true)
     protected Client getEntityById(long id) {
-        return clientRepository.findById(id).
+        return clientRepository.findByClientId(id).
                 orElseThrow(() -> new ServiceException("Client with id " + id + " not found", HttpStatus.NOT_FOUND));
     }
 

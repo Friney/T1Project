@@ -1,5 +1,6 @@
 package ru.t1.accountservice.core.service.account;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import ru.t1.accountservice.core.annotation.Cached;
 import ru.t1.accountservice.core.annotation.LogDataSourceError;
 import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.account.Account;
+import ru.t1.accountservice.core.entity.account.AccountStatus;
 import ru.t1.accountservice.core.entity.client.Client;
 import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.mapper.AccountMapper;
@@ -48,14 +50,18 @@ public class AccountServiceImpl implements AccountService {
         if (!clientService.existsById(clientId)) {
             throw new ServiceException("Client with id " + clientId + " not found", HttpStatus.NOT_FOUND);
         }
+
         Client client = Client.builder()
                 .id(clientId)
                 .build();
 
         Account account = Account.builder()
+                .accountId(accountRepository.getNextAccountId())
                 .accountType(accountCreateRequest.accountType())
                 .balance(accountCreateRequest.balance())
+                .frozenAmount(BigDecimal.ZERO)
                 .client(client)
+                .status(AccountStatus.OPEN)
                 .build();
 
         return accountMapper.map(accountRepository.save(account));
@@ -76,17 +82,17 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public void delete(long id, long clientId) {
         getEntityById(id, clientId);
-        accountRepository.deleteById(id);
+        accountRepository.deleteByAccountId(id);
     }
 
     @Override
     public boolean existsById(long id) {
-        return accountRepository.existsById(id);
+        return accountRepository.existsByAccountId(id);
     }
 
     @Transactional(readOnly = true)
     protected Account getEntityById(long id, long clientId) {
-        return accountRepository.findByIdAndClientId(id, clientId)
+        return accountRepository.findByAccountIdAndClientId(id, clientId)
                 .orElseThrow(() -> new ServiceException("Account with id " + id + " not found for client with id " + clientId, HttpStatus.NOT_FOUND));
     }
 

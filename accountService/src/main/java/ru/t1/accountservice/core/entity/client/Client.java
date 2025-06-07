@@ -33,6 +33,8 @@ public class Client {
 
     private String lastName;
 
+    private Long clientId;
+
     @OneToMany(mappedBy = "client")
     private List<Account> accounts;
 }

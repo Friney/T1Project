@@ -34,6 +34,12 @@ public class Transaction {
 
     private LocalDateTime transactionTime;
 
+    private TransactionStatus status;
+
+    private LocalDateTime createTime;
+
+    private Long transactionId;
+
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;

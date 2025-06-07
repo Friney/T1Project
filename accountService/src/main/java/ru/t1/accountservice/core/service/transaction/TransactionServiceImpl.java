@@ -1,5 +1,6 @@
 package ru.t1.accountservice.core.service.transaction;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import ru.t1.accountservice.core.annotation.LogDataSourceError;
 import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.account.Account;
 import ru.t1.accountservice.core.entity.transaction.Transaction;
+import ru.t1.accountservice.core.entity.transaction.TransactionStatus;
 import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.mapper.TransactionMapper;
 import ru.t1.accountservice.core.repository.TransactionRepository;
@@ -49,14 +51,18 @@ public class TransactionServiceImpl implements TransactionService {
         if (!accountService.existsById(accountId)) {
             throw new ServiceException("Account with id " + accountId + " not found", HttpStatus.NOT_FOUND);
         }
+
         Account account = Account.builder()
                 .id(accountId)
                 .build();
 
         Transaction transaction = Transaction.builder()
+                .transactionId(transactionRepository.getNextTransactionId())
                 .transactionTime(transactionCreateRequest.transactionTime())
+                .createTime(LocalDateTime.now())
                 .amount(transactionCreateRequest.amount())
                 .account(account)
+                .status(TransactionStatus.ACCEPTED)
                 .build();
 
         return transactionMapper.map(transactionRepository.save(transaction));
@@ -82,12 +88,12 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public void delete(long id, long accountId) {
         getEntityById(id, accountId);
-        transactionRepository.deleteById(id);
+        transactionRepository.deleteByTransactionId(id);
     }
 
     @Transactional(readOnly = true)
     protected Transaction getEntityById(long id, long accountId) {
-        return transactionRepository.findByIdAndAccountId(id, accountId)
+        return transactionRepository.findByTransactionIdAndAccountId(id, accountId)
                 .orElseThrow(() -> new ServiceException("Transaction with id " + id + " not found for account with id " + accountId, HttpStatus.NOT_FOUND));
     }
 }

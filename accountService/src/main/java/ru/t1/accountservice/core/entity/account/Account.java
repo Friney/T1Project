@@ -33,7 +33,13 @@ public class Account {
 
     private AccountType accountType;
 
+    private AccountStatus status;
+
     private BigDecimal balance;
+
+    private BigDecimal frozenAmount;
+
+    private Long accountId;
 
     @ManyToOne
     @JoinColumn(name = "client_id")
