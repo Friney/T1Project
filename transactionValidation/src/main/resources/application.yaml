@@ -1,0 +1,15 @@
+server:
+  port: 8081
+logging:
+  level:
+    org.springframework.web: DEBUG
+t1:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      transactions: t1_demo_transactions
+      transaction_accept: t1_demo_transaction_accept
+      transaction_result: t1_demo_transaction_result
+    producer:
+      retries: 3
+      retry-backoff-ms: 1000
