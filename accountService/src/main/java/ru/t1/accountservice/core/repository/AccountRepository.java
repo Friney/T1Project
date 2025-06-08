@@ -18,7 +18,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     List<Account> findAllByClientId(Long clientId);
 
+    Optional<Account> findByAccountId(Long accountId);
+
     @Query(value = "SELECT nextval('account_end_to_end_id_seq')")
     Long getNextAccountId();
-
 }

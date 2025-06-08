@@ -1,4 +1,4 @@
-package ru.t1.accountservice.core.kafka;
+package ru.t1.transactionvalidation.core.kafka;
 
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;

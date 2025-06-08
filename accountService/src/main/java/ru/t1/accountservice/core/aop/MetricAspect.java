@@ -22,7 +22,7 @@ import ru.t1.accountservice.core.service.timelimit.TimeLimitExceedLogService;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class MetricAspect {
 
-    @Value("${metric.time-limit}")
+    @Value("${t1.metric.time-limit}")
     private Duration timeLimit;
     private final TimeLimitExceedLogService timeLimitExceedLogService;
     private final KafkaMetricProducer kafkaMetricProducer;

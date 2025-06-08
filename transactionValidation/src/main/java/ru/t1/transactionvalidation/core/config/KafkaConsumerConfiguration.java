@@ -1,4 +1,4 @@
-package ru.t1.accountservice.core.config;
+package ru.t1.transactionvalidation.core.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,15 +18,15 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
-import ru.t1.accountservice.api.dto.transaction.TransactionCreateKafka;
-import ru.t1.accountservice.core.kafka.MessageDeserializer;
+import ru.t1.transactionvalidation.api.dto.transaction.TransactionAcceptKafka;
+import ru.t1.transactionvalidation.core.kafka.MessageDeserializer;
 
 @Slf4j
 @Configuration
 public class KafkaConsumerConfiguration {
 
-    @Value("${t1.kafka.group-id.transactions}")
-    private String transactionsGroupId;
+    @Value("${t1.kafka.group-id.transaction_accept}")
+    private String transactionsAcceptGroupId;
     @Value("${t1.kafka.bootstrap-servers}")
     private String servers;
     @Value("${t1.kafka.consumer.session-timeout-ms}")
@@ -42,27 +42,27 @@ public class KafkaConsumerConfiguration {
 
 
     @Bean
-    public ConsumerFactory<String, TransactionCreateKafka> transactionsCreateConsumerFactory() {
-        Map<String, Object> config = getConsumerConfig("ru.t1.accountservice.api.dto.transaction.TransactionCreateKafka", transactionsGroupId);
-        DefaultKafkaConsumerFactory<String, TransactionCreateKafka> factory = new DefaultKafkaConsumerFactory<>(config);
+    public ConsumerFactory<String, TransactionAcceptKafka> transactionsAcceptConsumerFactory() {
+        Map<String, Object> config = getConsumerConfig();
+        DefaultKafkaConsumerFactory<String, TransactionAcceptKafka> factory = new DefaultKafkaConsumerFactory<>(config);
         factory.setKeyDeserializer(new StringDeserializer());
         return factory;
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, TransactionCreateKafka> kafkaListenerTransactionsCreateContainerFactory(@Qualifier("transactionsCreateConsumerFactory") ConsumerFactory<String, TransactionCreateKafka> transactionsCreateConsumerFactory) {
-        ConcurrentKafkaListenerContainerFactory<String, TransactionCreateKafka> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, TransactionAcceptKafka> kafkaListenerTransactionsAcceptContainerFactory(@Qualifier("transactionsAcceptConsumerFactory") ConsumerFactory<String, TransactionAcceptKafka> transactionsCreateConsumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, TransactionAcceptKafka> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factoryBuilder(transactionsCreateConsumerFactory, factory);
         return factory;
     }
 
-    private Map<String, Object> getConsumerConfig(String pathFromClass, String groupId) {
+    private Map<String, Object> getConsumerConfig() {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, transactionsAcceptGroupId);
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, pathFromClass);
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, TransactionAcceptKafka.class.getName());
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         config.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, sessionTimeout);

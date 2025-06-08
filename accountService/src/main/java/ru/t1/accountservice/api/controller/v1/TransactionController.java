@@ -1,4 +1,4 @@
-package ru.t1.accountservice.api.controller;
+package ru.t1.accountservice.api.controller.v1;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,7 +20,7 @@ import ru.t1.accountservice.api.dto.transaction.TransactionUpdateRequest;
 import ru.t1.accountservice.core.service.transaction.TransactionService;
 
 @RestController
-@RequestMapping(Paths.TRANSACTIONS)
+@RequestMapping(Paths.TRANSACTIONS_V1)
 @RequiredArgsConstructor
 public class TransactionController {
 

@@ -6,23 +6,23 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
-import ru.t1.transactionvalidation.api.dto.transaction.TransactionCreateKafka;
-import ru.t1.transactionvalidation.api.dto.transaction.TransactionCreateRequest;
+import ru.t1.transactionvalidation.api.dto.transaction.TransactionResultKafka;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class KafkaTransactionCreateProducer {
+public class KafkaTransactionResultProducer {
 
-    private final KafkaTemplate<String, TransactionCreateRequest> kafkaTemplate;
+    private final KafkaTemplate<String, TransactionResultKafka> kafkaTemplate;
 
-    public void sendMessage(TransactionCreateKafka payload) {
-        Message<TransactionCreateKafka> message = MessageBuilder
+    public void sendMessage(TransactionResultKafka payload) {
+        Message<TransactionResultKafka> message = MessageBuilder
                 .withPayload(payload)
                 .build();
 
         try {
             kafkaTemplate.send(message);
+            log.info("Message sent -> {}", payload);
         } catch (Exception e) {
             log.error("Failed to send message -> {}", e.getMessage());
         } finally {

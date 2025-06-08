@@ -1,4 +1,4 @@
-package ru.t1.accountservice.core.kafka;
+package ru.t1.transactionvalidation.core.kafka;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -9,22 +9,22 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import ru.t1.accountservice.api.dto.transaction.TransactionCreateKafka;
-import ru.t1.accountservice.core.service.transaction.TransactionService;
+import ru.t1.transactionvalidation.api.dto.transaction.TransactionAcceptKafka;
+import ru.t1.transactionvalidation.core.service.TransactionService;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class KafkaTransactionsCreateConsumer {
+public class KafkaTransactionsAcceptConsumer {
 
     private final TransactionService transactionService;
 
     @KafkaListener(
-            id = "${t1.kafka.group-id.transactions}",
-            topics = "${t1.kafka.topic.transactions}",
-            containerFactory = "kafkaListenerTransactionsCreateContainerFactory"
+            id = "${t1.kafka.group-id.transaction_accept}",
+            topics = "${t1.kafka.topic.transaction_accept}",
+            containerFactory = "kafkaListenerTransactionsAcceptContainerFactory"
     )
-    public void listenTransactionsCreate(@Payload List<TransactionCreateKafka> transactionCreateKafkaList,
+    public void listenTransactionsCreate(@Payload List<TransactionAcceptKafka> transactionCreateKafkaList,
                                          Acknowledgment ack,
                                          @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {

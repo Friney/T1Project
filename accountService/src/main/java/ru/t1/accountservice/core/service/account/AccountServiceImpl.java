@@ -43,6 +43,21 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Cached(name = "account")
+    @Transactional(readOnly = true)
+    public AccountDto getOnlyById(long id) {
+        Account account = getEntityOnlyById(id);
+        return accountMapper.map(account);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getClientIdByAccountId(long id) {
+        Account account = getEntityOnlyById(id);
+        return account.getClient().getClientId();
+    }
+
+    @Override
     @Metric
     @LogDataSourceError
     @Transactional
@@ -78,6 +93,28 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Metric
+    @LogDataSourceError
+    @Transactional
+    public void addAmount(long id, BigDecimal amount) {
+        Account account = getEntityOnlyById(id);
+        account.setBalance(account.getBalance().add(amount));
+        accountRepository.save(account);
+    }
+
+    @Override
+    @Metric
+    @LogDataSourceError
+    @Transactional
+    public void updateAccountForBlockedTransaction(long id, BigDecimal amount, BigDecimal frozenAmount, AccountStatus status) {
+        Account account = getEntityOnlyById(id);
+        account.setBalance(account.getBalance().subtract(amount));
+        account.setFrozenAmount(account.getFrozenAmount().add(frozenAmount));
+        account.setStatus(status);
+        accountRepository.save(account);
+    }
+
+    @Override
     @LogDataSourceError
     @Transactional
     public void delete(long id, long clientId) {
@@ -94,6 +131,12 @@ public class AccountServiceImpl implements AccountService {
     protected Account getEntityById(long id, long clientId) {
         return accountRepository.findByAccountIdAndClientId(id, clientId)
                 .orElseThrow(() -> new ServiceException("Account with id " + id + " not found for client with id " + clientId, HttpStatus.NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    protected Account getEntityOnlyById(long id) {
+        return accountRepository.findByAccountId(id)
+                .orElseThrow(() -> new ServiceException("Account with id " + id + " not found", HttpStatus.NOT_FOUND));
     }
 
     private void updateAccountFields(Account account, AccountUpdateRequest accountUpdateRequest) {

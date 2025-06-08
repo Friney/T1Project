@@ -1,4 +1,4 @@
-package ru.t1.transactionvalidation.api.dto.transaction;
+package ru.t1.accountservice.api.dto.transaction;
 
 import lombok.Builder;
 

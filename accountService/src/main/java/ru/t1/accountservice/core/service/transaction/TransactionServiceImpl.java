@@ -7,16 +7,23 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.t1.accountservice.api.dto.account.AccountDto;
+import ru.t1.accountservice.api.dto.transaction.TransactionAcceptKafka;
+import ru.t1.accountservice.api.dto.transaction.TransactionCreateKafka;
 import ru.t1.accountservice.api.dto.transaction.TransactionCreateRequest;
 import ru.t1.accountservice.api.dto.transaction.TransactionDto;
+import ru.t1.accountservice.api.dto.transaction.TransactionResultKafka;
+import ru.t1.accountservice.api.dto.transaction.TransactionResultStatus;
 import ru.t1.accountservice.api.dto.transaction.TransactionUpdateRequest;
 import ru.t1.accountservice.core.annotation.Cached;
 import ru.t1.accountservice.core.annotation.LogDataSourceError;
 import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.account.Account;
+import ru.t1.accountservice.core.entity.account.AccountStatus;
 import ru.t1.accountservice.core.entity.transaction.Transaction;
 import ru.t1.accountservice.core.entity.transaction.TransactionStatus;
 import ru.t1.accountservice.core.exception.ServiceException;
+import ru.t1.accountservice.core.kafka.KafkaTransactionAcceptProducer;
 import ru.t1.accountservice.core.mapper.TransactionMapper;
 import ru.t1.accountservice.core.repository.TransactionRepository;
 import ru.t1.accountservice.core.service.account.AccountService;
@@ -28,6 +35,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final TransactionMapper transactionMapper;
+    private final KafkaTransactionAcceptProducer kafkaTransactionAcceptProducer;
 
 
     @Override
@@ -66,6 +74,78 @@ public class TransactionServiceImpl implements TransactionService {
                 .build();
 
         return transactionMapper.map(transactionRepository.save(transaction));
+    }
+
+    @Override
+    @Metric
+    @LogDataSourceError
+    @Transactional
+    public void processIncomingTransaction(TransactionCreateKafka transactionCreateKafka) {
+        AccountDto accountDto = accountService.getOnlyById(transactionCreateKafka.accountId());
+        if (accountDto.status() != AccountStatus.OPEN) {
+            throw new ServiceException("Account with id " + transactionCreateKafka.accountId() + " is not open", HttpStatus.BAD_REQUEST);
+        }
+
+        accountService.addAmount(transactionCreateKafka.accountId(), transactionCreateKafka.amount());
+
+        long accountId = accountDto.id();
+        Account account = Account.builder()
+                .id(accountId)
+                .build();
+
+        Transaction transaction = Transaction.builder()
+                .transactionId(transactionRepository.getNextTransactionId())
+                .transactionTime(transactionCreateKafka.transactionTime())
+                .createTime(LocalDateTime.now())
+                .amount(transactionCreateKafka.amount())
+                .account(account)
+                .status(TransactionStatus.REQUESTED)
+                .build();
+
+        transactionRepository.save(transaction);
+
+        Long clientId = accountService.getClientIdByAccountId(accountId);
+
+        TransactionAcceptKafka transactionAcceptKafka = TransactionAcceptKafka.builder()
+                .clientId(clientId)
+                .accountId(accountId)
+                .transactionId(transaction.getTransactionId())
+                .timestamp(transaction.getCreateTime())
+                .transactionAmount(transaction.getAmount())
+                .accountBalance(accountDto.balance())
+                .accountType(accountDto.accountType())
+                .build();
+
+
+        kafkaTransactionAcceptProducer.sendMessage(transactionAcceptKafka);
+    }
+
+    @Override
+    @Metric
+    @LogDataSourceError
+    @Transactional
+    public void processTransactionResponse(TransactionResultKafka transactionResultKafka) {
+        Long accountId = transactionResultKafka.accountId();
+        Long transactionId = transactionResultKafka.transactionId();
+        TransactionResultStatus transactionResultStatus = transactionResultKafka.transactionResultStatus();
+        Transaction transaction = getEntityById(transactionId, accountId);
+
+        if (transactionResultStatus == TransactionResultStatus.BLOCKED) {
+            transaction.setStatus(TransactionStatus.BLOCKED);
+            accountService.updateAccountForBlockedTransaction(
+                    accountId,
+                    transaction.getAmount().negate(),
+                    transaction.getAmount().abs(),
+                    AccountStatus.BLOCKED
+            );
+        } else if (transactionResultStatus == TransactionResultStatus.REJECTED) {
+            transaction.setStatus(TransactionStatus.REJECTED);
+            accountService.addAmount(accountId, transaction.getAmount().negate());
+        } else {
+            transaction.setStatus(TransactionStatus.ACCEPTED);
+        }
+
+        transactionRepository.save(transaction);
     }
 
     @Override

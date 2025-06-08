@@ -1,4 +1,11 @@
 package ru.t1.accountservice.api.dto.transaction;
 
-public record TransactionCreateKafka() {
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+public record TransactionCreateKafka(
+        BigDecimal amount,
+        LocalDateTime transactionTime,
+        Long accountId
+) {
 }

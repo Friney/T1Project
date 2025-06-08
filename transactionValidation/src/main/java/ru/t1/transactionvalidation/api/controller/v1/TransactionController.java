@@ -1,4 +1,4 @@
-package ru.t1.transactionvalidation.api.controller;
+package ru.t1.transactionvalidation.api.controller.v1;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import ru.t1.transactionvalidation.api.dto.transaction.TransactionCreateRequest;
 import ru.t1.transactionvalidation.core.kafka.KafkaTransactionCreateProducer;
 
 @RestController
-@RequestMapping("accounts/{accountId}/transactions")
+@RequestMapping("api/v1/accounts/{accountId}/transactions")
 @RequiredArgsConstructor
 public class TransactionController {
 

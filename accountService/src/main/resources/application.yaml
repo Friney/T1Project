@@ -15,17 +15,31 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-metric:
-  time-limit: 70ms
-cache:
-  ttl: 30m
-  max-size: 1000
-
 t1:
   kafka:
     bootstrap-servers: localhost:9092
     topic:
       metrics: t1_demo_metrics
+      transactions: t1_demo_transactions
+      transaction-accept: t1_demo_transaction_accept
+      transaction-result: t1_demo_transaction_result
+    group-id:
+      transactions: transactions_group
+      transaction-result: transaction_result_group
     producer:
       retries: 3
       retry-backoff-ms: 1000
+    consumer:
+      session-timeout-ms: 15000
+      heartbeat:
+        interval: 3000
+      max:
+        partition-fetch-bytes: 300000
+        poll:
+          records: 10
+          interval-ms: 60000
+  metric:
+    time-limit: 70ms
+  cache:
+    ttl: 30m
+    max-size: 1000

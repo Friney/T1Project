@@ -1,4 +1,11 @@
 package ru.t1.transactionvalidation.api.dto.transaction;
 
-public class TtransactionResultKafka {
+import lombok.Builder;
+
+@Builder
+public record TransactionResultKafka(
+        Long accountId,
+        Long transactionId,
+        TransactionResultStatus transactionResultStatus
+) {
 }

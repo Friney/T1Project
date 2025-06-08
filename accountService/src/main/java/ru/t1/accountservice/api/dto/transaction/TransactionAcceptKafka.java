@@ -6,7 +6,7 @@ import lombok.Builder;
 import ru.t1.accountservice.core.entity.account.AccountType;
 
 @Builder
-public record TransactionAccept(
+public record TransactionAcceptKafka(
         Long clientId,
         Long accountId,
         Long transactionId,
