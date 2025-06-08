@@ -1,0 +1,6 @@
+package ru.t1.transactionvalidation.api.dto.transaction;
+
+public enum AccountType {
+    DEBIT,
+    CREDIT
+}

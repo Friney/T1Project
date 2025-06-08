@@ -1,0 +1,4 @@
+package ru.t1.transactionvalidation.api.dto.transaction;
+
+public class TtransactionResultKafka {
+}
