@@ -1,4 +1,4 @@
-package ru.t1.transactionvalidation.api.controller.v1;
+package ru.t1.transactionvalidation.api.controller.v1.transactions;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

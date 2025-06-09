@@ -10,7 +10,7 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import ru.t1.transactionvalidation.api.dto.transaction.TransactionAcceptKafka;
-import ru.t1.transactionvalidation.core.service.TransactionService;
+import ru.t1.transactionvalidation.core.service.transactions.TransactionService;
 
 @Slf4j
 @Component

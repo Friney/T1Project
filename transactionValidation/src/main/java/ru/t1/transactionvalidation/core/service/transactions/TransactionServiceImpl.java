@@ -1,4 +1,4 @@
-package ru.t1.transactionvalidation.core.service;
+package ru.t1.transactionvalidation.core.service.transactions;
 
 import java.math.BigDecimal;
 import java.time.Duration;
