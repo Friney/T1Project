@@ -21,6 +21,8 @@ public interface AccountService {
 
     void addAmount(long id, BigDecimal amount);
 
+    void updateStatus(long id, AccountStatus status);
+
     void updateAccountForBlockedTransaction(long id, BigDecimal amount, BigDecimal frozenAmount, AccountStatus status);
 
     Long getClientIdByAccountId(long id);

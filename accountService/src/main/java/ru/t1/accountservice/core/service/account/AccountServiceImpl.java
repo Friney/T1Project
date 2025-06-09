@@ -106,6 +106,19 @@ public class AccountServiceImpl implements AccountService {
     @Metric
     @LogDataSourceError
     @Transactional
+    public void updateStatus(long id, AccountStatus status) {
+        Account account = getEntityOnlyById(id);
+        if (account.getStatus().equals(status)) {
+            return;
+        }
+        account.setStatus(status);
+        accountRepository.save(account);
+    }
+
+    @Override
+    @Metric
+    @LogDataSourceError
+    @Transactional
     public void updateAccountForBlockedTransaction(long id, BigDecimal amount, BigDecimal frozenAmount, AccountStatus status) {
         Account account = getEntityOnlyById(id);
         account.setBalance(account.getBalance().subtract(amount));

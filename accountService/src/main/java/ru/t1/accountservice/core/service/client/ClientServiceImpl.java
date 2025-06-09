@@ -13,6 +13,7 @@ import ru.t1.accountservice.core.annotation.Cached;
 import ru.t1.accountservice.core.annotation.LogDataSourceError;
 import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.client.Client;
+import ru.t1.accountservice.core.entity.client.ClientStatus;
 import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.mapper.ClientMapper;
 import ru.t1.accountservice.core.repository.ClientRepository;
@@ -35,6 +36,13 @@ public class ClientServiceImpl implements ClientService {
     @Transactional(readOnly = true)
     public ClientDto getById(long id) {
         return clientMapper.map(getEntityById(id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClientStatus getStatus(long id) {
+        Client client = getEntityById(id);
+        return client.getStatus();
     }
 
     @Override
@@ -63,6 +71,18 @@ public class ClientServiceImpl implements ClientService {
         return clientMapper.map(clientRepository.save(client));
     }
 
+    @Override
+    @Metric
+    @LogDataSourceError
+    @Transactional
+    public void updateStatus(long id, ClientStatus status) {
+        Client client = getEntityById(id);
+        if (client.getStatus().equals(status)) {
+            return;
+        }
+        client.setStatus(status);
+        clientRepository.save(client);
+    }
 
     @Override
     @LogDataSourceError
