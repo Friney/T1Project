@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,9 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionMapper transactionMapper;
     private final KafkaTransactionAcceptProducer kafkaTransactionAcceptProducer;
     private final BlacklistStatusService blacklistStatusService;
+
+    @Value("${t1.transaction.max-retries}")
+    private long maxRetriesTransaction;
 
 
     @Override
@@ -159,11 +163,14 @@ public class TransactionServiceImpl implements TransactionService {
                     accountId,
                     transaction.getAmount().negate(),
                     transaction.getAmount().abs(),
-                    AccountStatus.ARRESTED
+                    AccountStatus.BLOCKED
             );
         } else if (transactionResultStatus == TransactionResultStatus.REJECTED) {
             transaction.setStatus(TransactionStatus.REJECTED);
             accountService.addAmount(accountId, transaction.getAmount().negate());
+            if (transactionRepository.findAllByStatus(TransactionStatus.REJECTED).size() >= maxRetriesTransaction) {
+                accountService.updateStatus(accountId, AccountStatus.ARRESTED);
+            }
         } else {
             transaction.setStatus(TransactionStatus.ACCEPTED);
         }

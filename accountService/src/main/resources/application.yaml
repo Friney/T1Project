@@ -43,6 +43,8 @@ t1:
   cache:
     ttl: 30m
     max-size: 1000
+  transaction:
+    max-retries: 3
   blacklist:
     base-url: http://localhost:8082
     url-get-status: api/v1/client/{clientId}/account/{accountId}/blacklist-status
