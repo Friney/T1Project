@@ -66,22 +66,6 @@ public class TransactionServiceImpl implements TransactionService {
             throw new ServiceException("Account with id " + accountId + " not found", HttpStatus.NOT_FOUND);
         }
 
-        Long clientId = accountService.getClientIdByAccountId(accountId);
-
-        TransactionStatus transactionStatus = TransactionStatus.ACCEPTED;
-
-        ClientStatus clientStatus = clientService.getStatus(clientId);
-        if (clientStatus.equals(ClientStatus.BLOCKED)) {
-            transactionStatus = TransactionStatus.BLOCKED;
-            accountService.updateStatus(accountId, AccountStatus.BLOCKED);
-        } else if (clientStatus.equals(ClientStatus.UNKNOWN)) {
-            if (blacklistStatusService.getBlacklistStatus(clientId, accountId).equals(ClientBlacklistStatus.BLACKLISTED)) {
-                transactionStatus = TransactionStatus.REJECTED;
-                accountService.updateStatus(accountId, AccountStatus.BLOCKED);
-                clientService.updateStatus(clientId, ClientStatus.BLOCKED);
-            }
-        }
-
         Account account = Account.builder()
                 .id(accountId)
                 .build();
@@ -92,7 +76,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .createTime(LocalDateTime.now())
                 .amount(transactionCreateRequest.amount())
                 .account(account)
-                .status(transactionStatus)
+                .status(TransactionStatus.ACCEPTED)
                 .build();
 
         return transactionMapper.map(transactionRepository.save(transaction));
@@ -175,7 +159,7 @@ public class TransactionServiceImpl implements TransactionService {
                     accountId,
                     transaction.getAmount().negate(),
                     transaction.getAmount().abs(),
-                    AccountStatus.BLOCKED
+                    AccountStatus.ARRESTED
             );
         } else if (transactionResultStatus == TransactionResultStatus.REJECTED) {
             transaction.setStatus(TransactionStatus.REJECTED);
