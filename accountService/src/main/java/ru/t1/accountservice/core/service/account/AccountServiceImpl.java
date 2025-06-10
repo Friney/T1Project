@@ -26,8 +26,8 @@ import ru.t1.accountservice.core.service.client.ClientService;
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
-    private final ClientService clientService;
     private final AccountMapper accountMapper;
+    private final ClientService clientService;
 
     @Override
     @Transactional(readOnly = true)

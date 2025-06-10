@@ -48,3 +48,7 @@ t1:
   blacklist:
     base-url: http://localhost:8082
     url-get-status: api/v1/client/{clientId}/account/{accountId}/blacklist-status
+  jwt:
+    secret: b74426f4b38bdb0a031331347c3382ef655024a66373c114c24929677e5fec02b9ae9f057d72fe81134bf2616e6d07133b02e6be9305760776ec94fdf7f04127
+    token-lifetime: 30m
+    refresh-lifetime: 7d
