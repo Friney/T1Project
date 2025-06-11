@@ -1,0 +1,12 @@
+t1:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      metrics: t1_demo_metrics
+    producer:
+      retries: 3
+      retry-backoff-ms: 1000
+  metric:
+    time-limit: 70ms
+server:
+  port: 8089

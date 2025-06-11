@@ -1,0 +1,4 @@
+ru.t1.monitoringstarter.core.config.MonitoringAspectConfig
+ru.t1.monitoringstarter.core.config.MonitoringKafkaConfig
+ru.t1.monitoringstarter.core.config.MonitoringServiceConfig
+ru.t1.monitoringstarter.core.config.MonitoringRepositoryConfig
