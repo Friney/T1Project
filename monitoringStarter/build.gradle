@@ -2,15 +2,19 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.0'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'maven-publish'
 }
 
 group = 'ru.t1'
 version = '1.0.0'
+archivesBaseName = 'monitoring-starter'
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 repositories {
@@ -23,8 +27,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.kafka:spring-kafka'
 
-    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     runtimeOnly 'org.postgresql:postgresql'
 
@@ -33,18 +37,70 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
 
+// Отключаем bootJar, так как это стартер
 bootJar {
     enabled = false
 }
 
+// Включаем обычный jar
 jar {
     enabled = true
     archiveClassifier = ''
+}
+
+// Публикация с versionMapping для Gradle 8+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+
+            pom {
+                name = 'T1 Monitoring Starter'
+                description = 'Spring Boot starter for monitoring and logging'
+                url = 'https://github.com/your-repo/monitoring-starter'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'your-id'
+                        name = 'Your Name'
+                        email = 'your.email@example.com'
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+        // Для публикации на внешний репозиторий раскомментируй и настрой:
+        // maven {
+        //     name = "myRepo"
+        //     url = uri("https://your-nexus-repo/repository/maven-releases/")
+        //     credentials {
+        //         username = project.findProperty("mavenUser") ?: ""
+        //         password = project.findProperty("mavenPassword") ?: ""
+        //     }
+        // }
+    }
 }
