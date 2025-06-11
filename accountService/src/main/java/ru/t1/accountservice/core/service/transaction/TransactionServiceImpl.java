@@ -53,7 +53,6 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     @Transactional(readOnly = true)
     public List<TransactionDto> getAll(long accountId) {
-        log.info("blacklistStatusService {}", blacklistStatusService.getBlacklistStatus(1L, 1L));
         return transactionMapper.map(transactionRepository.findAllByAccountId(accountId));
     }
 
