@@ -16,7 +16,6 @@ public interface JwtService {
 
     String generateJwtToken(String login);
 
-
     String generateRefreshToken(String login);
 
     String generateToken(String login, Duration duration);

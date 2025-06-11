@@ -1,5 +1,6 @@
 package ru.t1.accountservice.core.service.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -8,21 +9,23 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.t1.accountservice.api.dto.jwt.JwtAuthenticationDto;
+import ru.t1.accountservice.core.service.jwt.version.JwtVersionService;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class JwtServiceImpl implements JwtService {
 
+    private final JwtVersionService jwtVersionService;
     @Value("${t1.jwt.secret}")
     private String jwtSecret;
-
     @Value("${t1.jwt.token-lifetime}")
     private Duration jwtTokenLifetime;
-
     @Value("${t1.jwt.refresh-lifetime}")
     private Duration refreshTokenLifetime;
 
@@ -55,12 +58,15 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                     .verifyWith(getSingInKey())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            return true;
+
+            String login = claims.getSubject();
+            Long version = claims.get("version", Long.class);
+            return jwtVersionService.isValidVersion(login, version);
         } catch (Exception e) {
             log.info("{} -> {}", e.getClass(), e.getMessage());
             return false;
@@ -80,8 +86,11 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateToken(String login, Duration duration) {
         Date date = Date.from(LocalDateTime.now().plus(duration).atZone(ZoneId.systemDefault()).toInstant());
+        Long version = jwtVersionService.getCurrentVersion(login);
+
         return Jwts.builder()
                 .subject(login)
+                .claim("version", version)
                 .expiration(date)
                 .signWith(getSingInKey())
                 .compact();

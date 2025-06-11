@@ -14,7 +14,6 @@ public interface UserService extends UserDetailsService {
 
     void delete(User userForDelete);
 
-    @Transactional(readOnly = true)
     User getEntityByLogin(String login);
 
     @Override

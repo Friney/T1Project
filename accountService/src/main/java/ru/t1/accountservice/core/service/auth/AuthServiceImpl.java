@@ -17,6 +17,7 @@ import ru.t1.accountservice.api.dto.user.UserUpdateRequest;
 import ru.t1.accountservice.core.entity.user.User;
 import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.service.jwt.JwtService;
+import ru.t1.accountservice.core.service.jwt.version.JwtVersionService;
 import ru.t1.accountservice.core.service.user.UserService;
 
 
@@ -26,6 +27,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final JwtVersionService jwtVersionService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
@@ -33,7 +35,11 @@ public class AuthServiceImpl implements AuthService {
     public JwtAuthenticationDto login(LoginRequest loginRequest) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.login(), loginRequest.password()));
         UserDetails user = userService.loadUserByUsername(loginRequest.login());
-
+        // Мб тут проверить, что раз токена нет, то создать?
+        Long userId = userService.getEntityByLogin(user.getUsername()).getId();
+        if (!jwtVersionService.isExists(userId)) {
+            jwtVersionService.createInitialVersion(userId);
+        }
         return jwtService.generateAuthToken(user.getUsername());
     }
 
@@ -48,7 +54,10 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(userRegisterRequest.password()))
                 .build();
 
-        return userService.create(user);
+        UserDto userDto = userService.create(user);
+        jwtVersionService.createInitialVersion(userDto.id());
+
+        return userDto;
     }
 
     @Override
@@ -58,7 +67,10 @@ public class AuthServiceImpl implements AuthService {
             throw new ServiceException("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
 
-        return jwtService.refreshBaseToken(jwtService.getLoginFromToken(refreshToken), refreshToken);
+        String login = jwtService.getLoginFromToken(refreshToken);
+        Long userId = userService.getEntityByLogin(login).getId();
+        jwtVersionService.incrementVersion(userId);
+        return jwtService.refreshBaseToken(login, refreshToken);
     }
 
     @Override
@@ -72,8 +84,9 @@ public class AuthServiceImpl implements AuthService {
             throw new ServiceException("old password is incorrect", HttpStatus.BAD_REQUEST);
         }
         user.setPassword(passwordEncoder.encode(userChangePasswordDto.newPassword()));
+        jwtVersionService.incrementVersion(user.getId());
 
-        return userService.update(null);
+        return userService.update(user);
     }
 
     @Override
@@ -82,6 +95,9 @@ public class AuthServiceImpl implements AuthService {
         if (userUpdateDto.login() != null) {
             user.setLogin(userUpdateDto.login());
         }
+        Long userId = userService.getEntityByLogin(userUpdateDto.login()).getId();
+        jwtVersionService.incrementVersion(userId);
+
         return userService.update(user);
     }
 
