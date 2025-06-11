@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import ru.t1.accountservice.core.service.account.AccountService;
 import ru.t1.accountservice.core.service.blacklist.BlacklistStatusService;
 import ru.t1.accountservice.core.service.client.ClientService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
@@ -51,6 +53,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     @Transactional(readOnly = true)
     public List<TransactionDto> getAll(long accountId) {
+        log.info("blacklistStatusService {}", blacklistStatusService.getBlacklistStatus(1L, 1L));
         return transactionMapper.map(transactionRepository.findAllByAccountId(accountId));
     }
 
