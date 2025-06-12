@@ -8,5 +8,3 @@ t1:
       retry-backoff-ms: 1000
   metric:
     time-limit: 70ms
-server:
-  port: 8089

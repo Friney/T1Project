@@ -19,8 +19,6 @@ import ru.t1.accountservice.api.dto.transaction.TransactionResultKafka;
 import ru.t1.accountservice.api.dto.transaction.TransactionResultStatus;
 import ru.t1.accountservice.api.dto.transaction.TransactionUpdateRequest;
 import ru.t1.accountservice.core.annotation.Cached;
-import ru.t1.accountservice.core.annotation.LogDataSourceError;
-import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.account.Account;
 import ru.t1.accountservice.core.entity.account.AccountStatus;
 import ru.t1.accountservice.core.entity.client.ClientStatus;
@@ -33,6 +31,8 @@ import ru.t1.accountservice.core.repository.TransactionRepository;
 import ru.t1.accountservice.core.service.account.AccountService;
 import ru.t1.accountservice.core.service.blacklist.BlacklistStatusService;
 import ru.t1.accountservice.core.service.client.ClientService;
+import ru.t1.monitoringstarter.core.annotation.LogDataSourceError;
+import ru.t1.monitoringstarter.core.annotation.Metric;
 
 @Slf4j
 @Service

@@ -6,12 +6,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.t1.accountservice.api.dto.user.UserDto;
-import ru.t1.accountservice.core.annotation.LogDataSourceError;
-import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.user.User;
 import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.mapper.UserMapper;
 import ru.t1.accountservice.core.repository.UserRepository;
+import ru.t1.monitoringstarter.core.annotation.LogDataSourceError;
+import ru.t1.monitoringstarter.core.annotation.Metric;
 
 @Service
 @RequiredArgsConstructor

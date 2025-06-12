@@ -5,13 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.t1.accountservice.core.annotation.LogDataSourceError;
-import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.jwtversion.JwtVersion;
 import ru.t1.accountservice.core.entity.user.User;
 import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.repository.JwtVersionRepository;
 import ru.t1.accountservice.core.service.user.UserService;
+import ru.t1.monitoringstarter.core.annotation.LogDataSourceError;
+import ru.t1.monitoringstarter.core.annotation.Metric;
 
 @Service
 @RequiredArgsConstructor

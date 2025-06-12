@@ -11,8 +11,6 @@ import ru.t1.accountservice.api.dto.account.AccountCreateRequest;
 import ru.t1.accountservice.api.dto.account.AccountDto;
 import ru.t1.accountservice.api.dto.account.AccountUpdateRequest;
 import ru.t1.accountservice.core.annotation.Cached;
-import ru.t1.accountservice.core.annotation.LogDataSourceError;
-import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.account.Account;
 import ru.t1.accountservice.core.entity.account.AccountStatus;
 import ru.t1.accountservice.core.entity.client.Client;
@@ -20,6 +18,8 @@ import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.mapper.AccountMapper;
 import ru.t1.accountservice.core.repository.AccountRepository;
 import ru.t1.accountservice.core.service.client.ClientService;
+import ru.t1.monitoringstarter.core.annotation.LogDataSourceError;
+import ru.t1.monitoringstarter.core.annotation.Metric;
 
 @Service
 @RequiredArgsConstructor

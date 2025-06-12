@@ -6,15 +6,12 @@ plugins {
 }
 
 group = 'ru.t1'
-version = '1.0.0'
-archivesBaseName = 'monitoring-starter'
+version = '0.9.9'
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
-    withSourcesJar()
-    withJavadocJar()
 }
 
 repositories {
@@ -43,23 +40,9 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-// Отключаем bootJar, так как это стартер
-bootJar {
-    enabled = false
-}
-
-// Включаем обычный jar
-jar {
-    enabled = true
-    archiveClassifier = ''
-}
-
-// Публикация с versionMapping для Gradle 8+
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            from components.java
-
             versionMapping {
                 usage('java-api') {
                     fromResolutionOf('runtimeClasspath')
@@ -68,39 +51,10 @@ publishing {
                     fromResolutionResult()
                 }
             }
-
-            pom {
-                name = 'T1 Monitoring Starter'
-                description = 'Spring Boot starter for monitoring and logging'
-                url = 'https://github.com/your-repo/monitoring-starter'
-
-                licenses {
-                    license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'your-id'
-                        name = 'Your Name'
-                        email = 'your.email@example.com'
-                    }
-                }
-            }
+            from components.java
         }
     }
     repositories {
         mavenLocal()
-        // Для публикации на внешний репозиторий раскомментируй и настрой:
-        // maven {
-        //     name = "myRepo"
-        //     url = uri("https://your-nexus-repo/repository/maven-releases/")
-        //     credentials {
-        //         username = project.findProperty("mavenUser") ?: ""
-        //         password = project.findProperty("mavenPassword") ?: ""
-        //     }
-        // }
     }
 }
