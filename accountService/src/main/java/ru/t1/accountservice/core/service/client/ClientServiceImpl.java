@@ -26,6 +26,7 @@ public class ClientServiceImpl implements ClientService {
     private final ClientMapper clientMapper;
 
     @Override
+    @Metric
     @Transactional(readOnly = true)
     public List<ClientDto> getAll() {
         return clientMapper.map(clientRepository.findAll());

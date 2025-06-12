@@ -3,3 +3,4 @@ ru.t1.monitoringstarter.core.config.MonitoringKafkaConfig
 ru.t1.monitoringstarter.core.config.MonitoringServiceConfig
 ru.t1.monitoringstarter.core.config.MonitoringRepositoryConfig
 ru.t1.monitoringstarter.core.config.MonitoringEntityRegistrar
+ru.t1.monitoringstarter.core.config.MonitoringJdbcConfig

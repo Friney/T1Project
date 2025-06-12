@@ -39,7 +39,7 @@ t1:
           records: 10
           interval-ms: 60000
   metric:
-    time-limit: 70ms
+    time-limit: 7ms
   cache:
     ttl: 30m
     max-size: 1000
