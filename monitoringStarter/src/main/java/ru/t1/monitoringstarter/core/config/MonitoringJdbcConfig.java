@@ -15,7 +15,7 @@ public class MonitoringJdbcConfig {
     }
 
     @Bean
-    public DatabaseSchemaValidator databaseMigrationUtil(JdbcTemplate jdbcTemplate) {
+    public DatabaseSchemaValidator databaseSchemaValidator(JdbcTemplate jdbcTemplate) {
         DatabaseSchemaValidator databaseSchemaValidator = new DatabaseSchemaValidator(jdbcTemplate);
         databaseSchemaValidator.validateAndCreateTables();
         return databaseSchemaValidator;

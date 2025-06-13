@@ -22,17 +22,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.kafka:spring-kafka'
 
-    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
     runtimeOnly 'org.postgresql:postgresql'
-
-    implementation 'org.hibernate:hibernate-core:7.0.0.Final'
-    implementation 'org.hibernate.tool:hibernate-tools-orm:7.0.0.Final'
-    implementation 'org.hibernate.tool:hibernate-tools-utils:7.0.0.Final'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
