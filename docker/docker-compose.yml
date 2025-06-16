@@ -17,6 +17,30 @@ services:
       start_period: 10s
       retries: 5
 
+  t1_prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+    networks:
+      - default
+
+  t1_grafana:
+    image: grafana/grafana-enterprise
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    ports:
+      - '3000:3000'
+    depends_on:
+      - t1_prometheus
+
   t1_zookeeper:
     image: confluentinc/cp-zookeeper:7.9.1
     ports:
@@ -33,6 +57,7 @@ services:
     ports:
       - "29092:29092"
       - "9092:9092"
+      - "7092:7092"
     depends_on:
       - t1_zookeeper
     volumes:
@@ -42,6 +67,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: 't1_zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://t1_1_broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7092 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -52,3 +78,4 @@ volumes:
   t1_zookeeper_data:
   t1_zookeeper_log:
   t1_1_broker_data:
+  grafana_data:

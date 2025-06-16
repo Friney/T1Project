@@ -15,6 +15,14 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,metrics,info,kafka
+  endpoint:
+    health:
+      show-details: always
 t1:
   kafka:
     bootstrap-servers: localhost:9092

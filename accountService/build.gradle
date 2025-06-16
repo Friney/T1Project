@@ -31,7 +31,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.kafka:spring-kafka'
-
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    
     implementation 'ru.t1:monitoring-starter:1.0.0'
 
     implementation 'io.jsonwebtoken:jjwt:0.12.6'
@@ -50,6 +51,8 @@ dependencies {
 
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
