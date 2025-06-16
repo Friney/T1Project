@@ -13,6 +13,7 @@ import ru.t1.accountservice.core.service.client.ClientService;
 @Component
 @RequiredArgsConstructor
 public class MetricsProvider {
+
     private final ClientService clientService;
     private final AccountService accountService;
 
