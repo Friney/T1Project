@@ -36,6 +36,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<AccountDto> getAllByStatus(AccountStatus status) {
+        return accountMapper.map(accountRepository.findAllByStatus(status));
+    }
+
+    @Override
     @Cached(name = "account")
     @Transactional(readOnly = true)
     public AccountDto getById(long id, long clientId) {

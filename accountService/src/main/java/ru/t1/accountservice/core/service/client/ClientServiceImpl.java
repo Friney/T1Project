@@ -33,6 +33,13 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Metric
+    @Transactional(readOnly = true)
+    public List<ClientDto> getAllByStatus(ClientStatus status) {
+        return clientMapper.map(clientRepository.findAllByStatus(status));
+    }
+
+    @Override
     @Cached(name = "client")
     @Transactional(readOnly = true)
     public ClientDto getById(long id) {

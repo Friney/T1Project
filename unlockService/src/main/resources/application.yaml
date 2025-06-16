@@ -1,0 +1,10 @@
+server:
+  port: 8083
+logging:
+  level:
+    org.springframework.web: DEBUG
+spring:
+  security:
+    user:
+      name: username
+      password: password

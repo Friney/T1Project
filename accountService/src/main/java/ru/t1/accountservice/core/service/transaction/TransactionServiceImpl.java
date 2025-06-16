@@ -46,9 +46,8 @@ public class TransactionServiceImpl implements TransactionService {
     private final KafkaTransactionAcceptProducer kafkaTransactionAcceptProducer;
     private final BlacklistStatusService blacklistStatusService;
 
-    @Value("${t1.transaction.max-retries}")
-    private long maxRetriesTransaction;
-
+    @Value("${t1.transaction.max-rejected}")
+    private long maxRejectedTransaction;
 
     @Override
     @Transactional(readOnly = true)
@@ -170,7 +169,7 @@ public class TransactionServiceImpl implements TransactionService {
         } else if (transactionResultStatus == TransactionResultStatus.REJECTED) {
             transaction.setStatus(TransactionStatus.REJECTED);
             accountService.addAmount(accountId, transaction.getAmount().negate());
-            if (transactionRepository.findAllByStatus(TransactionStatus.REJECTED).size() >= maxRetriesTransaction) {
+            if (transactionRepository.findAllByAccountIdAndStatus(accountId, TransactionStatus.REJECTED).size() >= maxRejectedTransaction) {
                 accountService.updateStatus(accountId, AccountStatus.ARRESTED);
             }
         } else {

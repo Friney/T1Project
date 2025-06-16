@@ -1,7 +1,8 @@
 package ru.t1.monitoringstarter.core.database;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class DatabaseSchemaValidator {
