@@ -34,20 +34,17 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @Metric
-    @Transactional(readOnly = true)
     public List<ClientDto> getAllByStatus(ClientStatus status) {
         return clientMapper.map(clientRepository.findAllByStatus(status));
     }
 
     @Override
     @Cached(name = "client")
-    @Transactional(readOnly = true)
     public ClientDto getById(long id) {
         return clientMapper.map(getEntityById(id));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ClientStatus getStatus(long id) {
         Client client = getEntityById(id);
         return client.getStatus();
@@ -105,8 +102,7 @@ public class ClientServiceImpl implements ClientService {
         return clientRepository.existsByClientId(id);
     }
 
-    @Transactional(readOnly = true)
-    protected Client getEntityById(long id) {
+    private Client getEntityById(long id) {
         return clientRepository.findByClientId(id).
                 orElseThrow(() -> new ServiceException("Client with id " + id + " not found", HttpStatus.NOT_FOUND));
     }

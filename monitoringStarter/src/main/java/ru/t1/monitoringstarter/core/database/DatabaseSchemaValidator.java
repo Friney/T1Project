@@ -1,8 +1,7 @@
 package ru.t1.monitoringstarter.core.database;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @RequiredArgsConstructor
 public class DatabaseSchemaValidator {
@@ -44,8 +43,8 @@ public class DatabaseSchemaValidator {
 
     private boolean isTableExists(String tableName) {
         try {
-            String query = "select 1 from " + tableName + " limit 1";
-            jdbcTemplate.queryForObject(query, Integer.class);
+            String sql = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ?";
+            jdbcTemplate.queryForObject(sql, Integer.class, tableName);
             return true;
         } catch (Exception e) {
             return false;

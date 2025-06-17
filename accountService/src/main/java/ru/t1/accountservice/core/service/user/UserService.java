@@ -2,7 +2,6 @@ package ru.t1.accountservice.core.service.user;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.transaction.annotation.Transactional;
 import ru.t1.accountservice.api.dto.user.UserDto;
 import ru.t1.accountservice.core.entity.user.User;
 

@@ -48,6 +48,10 @@ public class MetricAspect {
                     kafkaMetricProducer.sendMessage(timeLimitExceedLogDto, "METRICS");
                     log.info("Log sent to Kafka");
                 } catch (Exception e) {
+                    if (e instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                        log.error("Interrupted while sending to Kafka", e);
+                    }
                     log.error("Error sending log to Kafka -> {}", e.getMessage());
                     timeLimitExceedLogService.save(timeLimitExceedLogDto);
                     log.info("Log saved to DB");

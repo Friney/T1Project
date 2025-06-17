@@ -21,13 +21,6 @@ public class JwtVersionServiceImpl implements JwtVersionService {
     private final UserService userService;
 
     @Override
-    @Transactional(readOnly = true)
-    public JwtVersion getVersionByUserId(Long userId) {
-        return jwtVersionRepository.findByUserId(userId)
-                .orElseThrow(() -> new ServiceException("Token version not found for user id: " + userId, HttpStatus.NOT_FOUND));
-    }
-
-    @Override
     @Metric
     @LogDataSourceError
     @Transactional
@@ -63,14 +56,12 @@ public class JwtVersionServiceImpl implements JwtVersionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Long getCurrentVersion(String login) {
         User user = userService.getEntityByLogin(login);
         return getVersionByUserId(user.getId()).getVersion();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public boolean isValidVersion(String login, Long tokenVersion) {
         try {
             Long currentVersion = getCurrentVersion(login);
@@ -84,5 +75,10 @@ public class JwtVersionServiceImpl implements JwtVersionService {
     @Override
     public boolean isExists(Long userId) {
         return jwtVersionRepository.existsByUserId(userId);
+    }
+
+    private JwtVersion getVersionByUserId(Long userId) {
+        return jwtVersionRepository.findByUserId(userId)
+                .orElseThrow(() -> new ServiceException("Token version not found for user id: " + userId, HttpStatus.NOT_FOUND));
     }
 }

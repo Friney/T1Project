@@ -21,7 +21,6 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public User getEntityByLogin(String login) {
         return userRepository.findByLogin(login)
                 .orElseThrow(() -> new ServiceException("User with login '" + login + "' not found", HttpStatus.NOT_FOUND));
@@ -58,7 +57,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) {
         User user = getEntityByLogin(username);
 

@@ -35,7 +35,6 @@ public class AuthServiceImpl implements AuthService {
     public JwtAuthenticationDto login(LoginRequest loginRequest) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.login(), loginRequest.password()));
         UserDetails user = userService.loadUserByUsername(loginRequest.login());
-        // Мб тут проверить, что раз токена нет, то создать?
         Long userId = userService.getEntityByLogin(user.getUsername()).getId();
         if (!jwtVersionService.isExists(userId)) {
             jwtVersionService.createInitialVersion(userId);
