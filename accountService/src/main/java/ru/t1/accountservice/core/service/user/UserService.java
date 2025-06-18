@@ -15,6 +15,8 @@ public interface UserService extends UserDetailsService {
 
     User getEntityByLogin(String login);
 
+    boolean isExistsByLogin(String login);
+
     @Override
     UserDetails loadUserByUsername(String username);
 }

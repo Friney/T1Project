@@ -91,6 +91,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserDto update(UserUpdateRequest userUpdateDto, UserDetails userDetails) {
         User user = userService.getEntityByLogin(userDetails.getUsername());
+        if (userService.isExistsByLogin(userUpdateDto.login()) && !userUpdateDto.login().equals(userDetails.getUsername())) {
+            throw new ServiceException("User with login '" + userUpdateDto.login() + "' already exists", HttpStatus.BAD_REQUEST);
+        }
         if (userUpdateDto.login() != null) {
             user.setLogin(userUpdateDto.login());
         }

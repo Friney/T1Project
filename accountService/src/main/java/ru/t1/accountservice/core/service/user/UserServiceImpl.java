@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     @LogDataSourceError
     @Transactional
     public UserDto create(User userForCreate) {
-        if (userRepository.existsByLogin(userForCreate.getLogin())) {
+        if (isExistsByLogin(userForCreate.getLogin())) {
             throw new ServiceException("User with login '" + userForCreate.getLogin() + "' already exists", HttpStatus.BAD_REQUEST);
         }
 
@@ -54,6 +54,11 @@ public class UserServiceImpl implements UserService {
     public void delete(User userForDelete) {
         User user = getEntityByLogin(userForDelete.getLogin());
         userRepository.delete(user);
+    }
+
+    @Override
+    public boolean isExistsByLogin(String login) {
+        return userRepository.existsByLogin(login);
     }
 
     @Override

@@ -52,6 +52,7 @@ class AccountControllerIT {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15.2");
+
     @RegisterExtension
     static WireMockExtension wireMock = WireMockExtension.newInstance()
             .options(wireMockConfig().dynamicPort())
@@ -94,21 +95,6 @@ class AccountControllerIT {
         clientId = savedClient.id();
 
         createTestUserAndGetToken();
-    }
-
-    private void createTestUserAndGetToken() {
-        String testUser = "testUser";
-        String testPassword = "testPassword";
-        UserRegisterRequest registerRequest = new UserRegisterRequest(
-                testUser,
-                testPassword,
-                testPassword
-        );
-        authService.registration(registerRequest);
-
-        LoginRequest loginRequest = new LoginRequest(testUser, testPassword);
-        JwtAuthenticationDto authDto = authService.login(loginRequest);
-        jwtToken = authDto.token();
     }
 
     @Test
@@ -206,7 +192,6 @@ class AccountControllerIT {
                 .andExpect(jsonPath("$.accountType").value(AccountType.CREDIT.name()))
                 .andExpect(jsonPath("$.balance").value(2000));
 
-        // Verify account was updated in database
         var updatedAccount = accountService.getOnlyById(accountId);
         assertEquals(AccountType.CREDIT, updatedAccount.accountType());
         assertEquals(0, BigDecimal.valueOf(2000).compareTo(updatedAccount.balance()));
@@ -263,5 +248,20 @@ class AccountControllerIT {
                 .balance(BigDecimal.valueOf(1000))
                 .build(), clientId);
         accountId = account.id();
+    }
+
+    private void createTestUserAndGetToken() {
+        String testUser = "testUser";
+        String testPassword = "testPassword";
+        UserRegisterRequest registerRequest = new UserRegisterRequest(
+                testUser,
+                testPassword,
+                testPassword
+        );
+        authService.registration(registerRequest);
+
+        LoginRequest loginRequest = new LoginRequest(testUser, testPassword);
+        JwtAuthenticationDto authDto = authService.login(loginRequest);
+        jwtToken = authDto.token();
     }
 }
