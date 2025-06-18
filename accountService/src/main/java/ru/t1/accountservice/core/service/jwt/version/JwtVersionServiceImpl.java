@@ -17,6 +17,7 @@ import ru.t1.monitoringstarter.core.annotation.Metric;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtVersionServiceImpl implements JwtVersionService {
+
     private final JwtVersionRepository jwtVersionRepository;
     private final UserService userService;
 
