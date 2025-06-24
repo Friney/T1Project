@@ -1,0 +1,56 @@
+{
+  "groups": [
+    {
+      "name": "t1",
+      "type": "java.lang.Object",
+      "sourceType": "ru.t1.monitoringstarter.core.config.MonitoringKafkaConfig"
+    },
+    {
+      "name": "t1.kafka",
+      "type": "java.lang.Object",
+      "sourceType": "ru.t1.monitoringstarter.core.config.MonitoringKafkaConfig"
+    },
+    {
+      "name": "t1.kafka.producer",
+      "type": "java.lang.Object",
+      "sourceType": "ru.t1.monitoringstarter.core.config.MonitoringKafkaConfig"
+    },
+    {
+      "name": "t1.metric",
+      "type": "java.lang.Object",
+      "sourceType": "ru.t1.monitoringstarter.core.aop.MetricAspect"
+    }
+  ],
+  "properties": [
+    {
+      "name": "t1.kafka.bootstrap-servers",
+      "type": "java.lang.String",
+      "description": "Kafka bootstrap servers address.",
+      "defaultValue": "localhost:9092"
+    },
+    {
+      "name": "t1.kafka.topic.metrics",
+      "type": "java.lang.String",
+      "description": "Kafka topic name for metrics.",
+      "defaultValue": "t1_demo_metrics"
+    },
+    {
+      "name": "t1.kafka.producer.retries",
+      "type": "java.lang.Integer",
+      "description": "Number of retries for Kafka producer.",
+      "defaultValue": 3
+    },
+    {
+      "name": "t1.kafka.producer.retry-backoff-ms",
+      "type": "java.lang.Integer",
+      "description": "Retry backoff in milliseconds for Kafka producer.",
+      "defaultValue": 1000
+    },
+    {
+      "name": "t1.metric.time-limit",
+      "type": "java.time.Duration",
+      "description": "Time limit for method execution before it's considered exceeded.",
+      "defaultValue": "70ms"
+    }
+  ]
+}

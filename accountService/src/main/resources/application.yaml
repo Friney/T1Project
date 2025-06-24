@@ -1,0 +1,76 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/t1_demo
+    username: postgres
+    password: postgres
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,metrics,info,kafka
+  endpoint:
+    health:
+      show-details: always
+t1:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      metrics: t1_demo_metrics
+      transactions: t1_demo_transactions
+      transaction-accept: t1_demo_transaction_accept
+      transaction-result: t1_demo_transaction_result
+    group-id:
+      transactions: transactions_group
+      transaction-result: transaction_result_group
+    producer:
+      retries: 3
+      retry-backoff-ms: 1000
+    consumer:
+      session-timeout-ms: 15000
+      heartbeat:
+        interval: 3000
+      max:
+        partition-fetch-bytes: 300000
+        poll:
+          records: 10
+          interval-ms: 60000
+  metric:
+    time-limit: 70ms
+  cache:
+    ttl: 30m
+    max-size: 1000
+  transaction:
+    max-rejected: 3
+  blacklist:
+    base-url: http://localhost:8082
+    endpoints:
+      get-status: api/v1/client/{clientId}/account/{accountId}/blacklist-status
+    username: username
+    password: password
+  unlock:
+    base-url: http://localhost:8083
+    endpoints:
+      request-client: api/v1/check-request/clients/{id}
+      request-account: api/v1/check-request/accounts/{id}
+    username: username
+    password: password
+    scheduling:
+      interval: 2h
+      clients-count: 5
+      accounts-count: 5
+  jwt:
+    secret: b74426f4b38bdb0a031331347c3382ef655024a66373c114c24929677e5fec02b9ae9f057d72fe81134bf2616e6d07133b02e6be9305760776ec94fdf7f04127
+    token-lifetime: 30m
+    refresh-lifetime: 7d

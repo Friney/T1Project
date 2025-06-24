@@ -1,0 +1,87 @@
+services:
+  t1_postgres:
+    image: postgres:17.5
+    restart: always
+    ports:
+      - "5434:5432"
+    volumes:
+      - t1_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: t1_demo
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  t1_prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+    networks:
+      - default
+
+  t1_grafana:
+    image: grafana/grafana-enterprise
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    ports:
+      - '3000:3000'
+    depends_on:
+      - t1_prometheus
+
+  t1_zookeeper:
+    image: confluentinc/cp-zookeeper:7.9.1
+    ports:
+      - "2181:2181"
+    volumes:
+      - t1_zookeeper_data:/var/lib/zookeeper/data
+      - t1_zookeeper_log:/var/lib/zookeeper/log
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  t1_1_broker:
+    image: confluentinc/cp-kafka:7.9.1
+    ports:
+      - "29092:29092"
+      - "9092:9092"
+      - "7092:7092"
+    depends_on:
+      - t1_zookeeper
+    volumes:
+      - t1_1_broker_data:/var/lib/kafka/data
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 't1_zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://t1_1_broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7092 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  t1_sonarqube:
+    image: sonarqube:25.4.0.105899-community
+    hostname: sonarqube
+    ports:
+      - "9001:9000"
+
+volumes:
+  t1_postgres_data:
+  t1_zookeeper_data:
+  t1_zookeeper_log:
+  t1_1_broker_data:
+  grafana_data:
