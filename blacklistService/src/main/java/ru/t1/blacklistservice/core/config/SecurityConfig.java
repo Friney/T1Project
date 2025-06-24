@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
+@SuppressWarnings("java:S4502") // CSRF disabled
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {

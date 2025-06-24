@@ -13,7 +13,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findAllByAccountId(Long accountId);
 
-    List<Transaction> findAllByStatus(TransactionStatus status);
+    List<Transaction> findAllByAccountIdAndStatus(Long accountId, TransactionStatus status);
 
     void deleteByTransactionId(Long transactionId);
 

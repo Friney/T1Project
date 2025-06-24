@@ -16,8 +16,6 @@ import ru.t1.accountservice.api.dto.transaction.TransactionAcceptKafka;
 @Configuration
 public class KafkaProducerConfiguration {
 
-    @Value("${t1.kafka.topic.metrics}")
-    private String metricsTopicName;
     @Value("${t1.kafka.topic.transaction-accept}")
     private String transactionAcceptTopicName;
     @Value("${t1.kafka.bootstrap-servers}")
@@ -28,23 +26,9 @@ public class KafkaProducerConfiguration {
     private int retryBackoffMs;
 
     @Bean
-    public ProducerFactory<String, Object> producerFactory() {
-        Map<String, Object> config = getConfigs();
-        return new DefaultKafkaProducerFactory<>(config);
-    }
-
-    @Bean
     public ProducerFactory<String, TransactionAcceptKafka> transactionAcceptproducerFactory() {
         Map<String, Object> config = getConfigs();
         return new DefaultKafkaProducerFactory<>(config);
-    }
-
-
-    @Bean
-    public KafkaTemplate<String, Object> kafkaTemplateMetrics(ProducerFactory<String, Object> producerFactory) {
-        KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(producerFactory);
-        kafkaTemplate.setDefaultTopic(metricsTopicName);
-        return kafkaTemplate;
     }
 
     @Bean

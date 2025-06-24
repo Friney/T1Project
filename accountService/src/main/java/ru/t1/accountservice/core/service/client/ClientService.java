@@ -10,6 +10,8 @@ public interface ClientService {
 
     List<ClientDto> getAll();
 
+    List<ClientDto> getAllByStatus(ClientStatus status);
+
     ClientStatus getStatus(long id);
 
     ClientDto getById(long id);

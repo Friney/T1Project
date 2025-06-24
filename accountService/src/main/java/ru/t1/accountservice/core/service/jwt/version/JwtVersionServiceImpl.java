@@ -5,27 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.t1.accountservice.core.annotation.LogDataSourceError;
-import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.jwtversion.JwtVersion;
 import ru.t1.accountservice.core.entity.user.User;
 import ru.t1.accountservice.core.exception.ServiceException;
 import ru.t1.accountservice.core.repository.JwtVersionRepository;
 import ru.t1.accountservice.core.service.user.UserService;
+import ru.t1.monitoringstarter.core.annotation.LogDataSourceError;
+import ru.t1.monitoringstarter.core.annotation.Metric;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class JwtVersionServiceImpl implements JwtVersionService {
+
     private final JwtVersionRepository jwtVersionRepository;
     private final UserService userService;
-
-    @Override
-    @Transactional(readOnly = true)
-    public JwtVersion getVersionByUserId(Long userId) {
-        return jwtVersionRepository.findByUserId(userId)
-                .orElseThrow(() -> new ServiceException("Token version not found for user id: " + userId, HttpStatus.NOT_FOUND));
-    }
 
     @Override
     @Metric
@@ -63,14 +57,12 @@ public class JwtVersionServiceImpl implements JwtVersionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Long getCurrentVersion(String login) {
         User user = userService.getEntityByLogin(login);
         return getVersionByUserId(user.getId()).getVersion();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public boolean isValidVersion(String login, Long tokenVersion) {
         try {
             Long currentVersion = getCurrentVersion(login);
@@ -84,5 +76,10 @@ public class JwtVersionServiceImpl implements JwtVersionService {
     @Override
     public boolean isExists(Long userId) {
         return jwtVersionRepository.existsByUserId(userId);
+    }
+
+    private JwtVersion getVersionByUserId(Long userId) {
+        return jwtVersionRepository.findByUserId(userId)
+                .orElseThrow(() -> new ServiceException("Token version not found for user id: " + userId, HttpStatus.NOT_FOUND));
     }
 }
