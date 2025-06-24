@@ -17,46 +17,46 @@ import ru.t1.accountservice.core.annotation.Cached;
 @Slf4j
 public class CachedAspect {
 
-    @Value("${cache.ttl}")
+    @Value("${t1.cache.ttl}")
     private Duration ttl;
 
-    @Value("${cache.max-size}")
+    @Value("${t1.cache.max-size}")
     private long maxCacheSize;
 
-    private final Map<NameAndArgs, CacheEntry> cache = new ConcurrentHashMap<>();
+    private final Map<NameAndArgs, CacheEntry> caches = new ConcurrentHashMap<>();
 
     @Around("@annotation(cached)")
     public Object cached(ProceedingJoinPoint proceedingJoinPoint, Cached cached) throws Throwable {
         long ttlMs = ttl.toMillis();
         String cacheName = cached.name();
 
-        if (cache.size() > maxCacheSize * 0.8) {
+        if (caches.size() > maxCacheSize * 0.8) {
             clearCacheForExpired();
         }
 
         NameAndArgs nameAndArgs = new NameAndArgs(cacheName, Arrays.toString(proceedingJoinPoint.getArgs()));
-        if (cache.containsKey(nameAndArgs)) {
-            CacheEntry cacheEntry = cache.get(nameAndArgs);
+        if (caches.containsKey(nameAndArgs)) {
+            CacheEntry cacheEntry = caches.get(nameAndArgs);
             if (isCacheExpired(cacheEntry, ttlMs)) {
                 log.info("Cache return {} for {}", cacheEntry.value, nameAndArgs);
                 return cacheEntry.value;
             } else {
-                cache.remove(nameAndArgs);
+                caches.remove(nameAndArgs);
             }
         }
 
-        return computeAndCacheValue(proceedingJoinPoint, nameAndArgs, ttlMs);
+        return computeAndCacheValue(proceedingJoinPoint, nameAndArgs);
     }
 
     private void clearCacheForExpired() {
-        cache.entrySet()
+        caches.entrySet()
                 .removeIf(entry -> isCacheExpired(entry.getValue(), ttl.toMillis()));
     }
 
-    private Object computeAndCacheValue(ProceedingJoinPoint proceedingJoinPoint, NameAndArgs nameAndArgs, long ttlMs) throws Throwable {
+    private Object computeAndCacheValue(ProceedingJoinPoint proceedingJoinPoint, NameAndArgs nameAndArgs) throws Throwable {
         Object result = proceedingJoinPoint.proceed();
         log.info("Cache save {} for {}", result, nameAndArgs);
-        cache.put(nameAndArgs, new CacheEntry(System.currentTimeMillis(), result));
+        caches.put(nameAndArgs, new CacheEntry(System.currentTimeMillis(), result));
         return result;
     }
 

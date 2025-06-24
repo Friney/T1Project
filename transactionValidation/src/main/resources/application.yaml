@@ -1,0 +1,29 @@
+server:
+  port: 8081
+logging:
+  level:
+    org.springframework.web: DEBUG
+t1:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      transactions: t1_demo_transactions
+      transaction_accept: t1_demo_transaction_accept
+      transaction_result: t1_demo_transaction_result
+    group-id:
+      transaction_accept: transaction_accept_group
+    producer:
+      retries: 3
+      retry-backoff-ms: 60000
+    consumer:
+      session-timeout-ms: 15000
+      heartbeat:
+        interval: 3000
+      max:
+        partition-fetch-bytes: 1000
+        poll:
+          records: 10
+          interval-ms: 300000
+  transaction:
+    limit-in-interval: 5
+    interval: 30m
