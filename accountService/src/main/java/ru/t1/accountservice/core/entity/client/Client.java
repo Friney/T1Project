@@ -35,6 +35,8 @@ public class Client {
 
     private Long clientId;
 
+    private ClientStatus status;
+
     @OneToMany(mappedBy = "client")
     private List<Account> accounts;
 }

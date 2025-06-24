@@ -4,10 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.t1.accountservice.api.dto.account.AccountDto;
+import ru.t1.accountservice.api.dto.blacklist.ClientBlacklistStatus;
 import ru.t1.accountservice.api.dto.transaction.TransactionAcceptKafka;
 import ru.t1.accountservice.api.dto.transaction.TransactionCreateKafka;
 import ru.t1.accountservice.api.dto.transaction.TransactionCreateRequest;
@@ -16,10 +19,9 @@ import ru.t1.accountservice.api.dto.transaction.TransactionResultKafka;
 import ru.t1.accountservice.api.dto.transaction.TransactionResultStatus;
 import ru.t1.accountservice.api.dto.transaction.TransactionUpdateRequest;
 import ru.t1.accountservice.core.annotation.Cached;
-import ru.t1.accountservice.core.annotation.LogDataSourceError;
-import ru.t1.accountservice.core.annotation.Metric;
 import ru.t1.accountservice.core.entity.account.Account;
 import ru.t1.accountservice.core.entity.account.AccountStatus;
+import ru.t1.accountservice.core.entity.client.ClientStatus;
 import ru.t1.accountservice.core.entity.transaction.Transaction;
 import ru.t1.accountservice.core.entity.transaction.TransactionStatus;
 import ru.t1.accountservice.core.exception.ServiceException;
@@ -27,16 +29,25 @@ import ru.t1.accountservice.core.kafka.KafkaTransactionAcceptProducer;
 import ru.t1.accountservice.core.mapper.TransactionMapper;
 import ru.t1.accountservice.core.repository.TransactionRepository;
 import ru.t1.accountservice.core.service.account.AccountService;
+import ru.t1.accountservice.core.service.blacklist.BlacklistStatusService;
+import ru.t1.accountservice.core.service.client.ClientService;
+import ru.t1.monitoringstarter.core.annotation.LogDataSourceError;
+import ru.t1.monitoringstarter.core.annotation.Metric;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
+    private final ClientService clientService;
     private final TransactionMapper transactionMapper;
     private final KafkaTransactionAcceptProducer kafkaTransactionAcceptProducer;
+    private final BlacklistStatusService blacklistStatusService;
 
+    @Value("${t1.transaction.max-rejected}")
+    private long maxRejectedTransaction;
 
     @Override
     @Transactional(readOnly = true)
@@ -46,7 +57,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Cached(name = "transaction")
-    @Transactional(readOnly = true)
     public TransactionDto getById(long id, long accountId) {
         return transactionMapper.map(getEntityById(id, accountId));
     }
@@ -82,13 +92,31 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public void processIncomingTransaction(TransactionCreateKafka transactionCreateKafka) {
         AccountDto accountDto = accountService.getOnlyById(transactionCreateKafka.accountId());
+        long accountId = accountDto.id();
         if (accountDto.status() != AccountStatus.OPEN) {
             throw new ServiceException("Account with id " + transactionCreateKafka.accountId() + " is not open", HttpStatus.BAD_REQUEST);
         }
 
-        accountService.addAmount(transactionCreateKafka.accountId(), transactionCreateKafka.amount());
+        Long clientId = accountService.getClientIdByAccountId(accountId);
 
-        long accountId = accountDto.id();
+        TransactionStatus transactionStatus = TransactionStatus.REQUESTED;
+        boolean needSendToKafka = true;
+
+        ClientStatus clientStatus = clientService.getStatus(clientId);
+        if (clientStatus.equals(ClientStatus.BLOCKED)) {
+            transactionStatus = TransactionStatus.BLOCKED;
+            accountService.updateStatus(accountId, AccountStatus.BLOCKED);
+            needSendToKafka = false;
+        } else if (clientStatus.equals(ClientStatus.UNKNOWN)) {
+            boolean isBlacklisted = blacklistStatusService.getBlacklistStatus(clientId, accountId).equals(ClientBlacklistStatus.BLACKLISTED);
+            if (isBlacklisted) {
+                transactionStatus = TransactionStatus.REJECTED;
+                accountService.updateStatus(accountId, AccountStatus.BLOCKED);
+                clientService.updateStatus(clientId, ClientStatus.BLOCKED);
+                needSendToKafka = false;
+            }
+        }
+
         Account account = Account.builder()
                 .id(accountId)
                 .build();
@@ -99,25 +127,25 @@ public class TransactionServiceImpl implements TransactionService {
                 .createTime(LocalDateTime.now())
                 .amount(transactionCreateKafka.amount())
                 .account(account)
-                .status(TransactionStatus.REQUESTED)
+                .status(transactionStatus)
                 .build();
 
         transactionRepository.save(transaction);
 
-        Long clientId = accountService.getClientIdByAccountId(accountId);
+        if (needSendToKafka) {
+            accountService.addAmount(accountId, transactionCreateKafka.amount());
+            TransactionAcceptKafka transactionAcceptKafka = TransactionAcceptKafka.builder()
+                    .clientId(clientId)
+                    .accountId(accountId)
+                    .transactionId(transaction.getTransactionId())
+                    .timestamp(transaction.getCreateTime())
+                    .transactionAmount(transaction.getAmount())
+                    .accountBalance(accountDto.balance())
+                    .accountType(accountDto.accountType())
+                    .build();
 
-        TransactionAcceptKafka transactionAcceptKafka = TransactionAcceptKafka.builder()
-                .clientId(clientId)
-                .accountId(accountId)
-                .transactionId(transaction.getTransactionId())
-                .timestamp(transaction.getCreateTime())
-                .transactionAmount(transaction.getAmount())
-                .accountBalance(accountDto.balance())
-                .accountType(accountDto.accountType())
-                .build();
-
-
-        kafkaTransactionAcceptProducer.sendMessage(transactionAcceptKafka);
+            kafkaTransactionAcceptProducer.sendMessage(transactionAcceptKafka);
+        }
     }
 
     @Override
@@ -129,20 +157,24 @@ public class TransactionServiceImpl implements TransactionService {
         Long transactionId = transactionResultKafka.transactionId();
         TransactionResultStatus transactionResultStatus = transactionResultKafka.transactionResultStatus();
         Transaction transaction = getEntityById(transactionId, accountId);
-
-        if (transactionResultStatus == TransactionResultStatus.BLOCKED) {
-            transaction.setStatus(TransactionStatus.BLOCKED);
-            accountService.updateAccountForBlockedTransaction(
-                    accountId,
-                    transaction.getAmount().negate(),
-                    transaction.getAmount().abs(),
-                    AccountStatus.BLOCKED
-            );
-        } else if (transactionResultStatus == TransactionResultStatus.REJECTED) {
-            transaction.setStatus(TransactionStatus.REJECTED);
-            accountService.addAmount(accountId, transaction.getAmount().negate());
-        } else {
-            transaction.setStatus(TransactionStatus.ACCEPTED);
+        switch (transactionResultStatus) {
+            case ACCEPTED -> transaction.setStatus(TransactionStatus.ACCEPTED);
+            case BLOCKED -> {
+                transaction.setStatus(TransactionStatus.BLOCKED);
+                accountService.updateAccountForBlockedTransaction(
+                        accountId,
+                        transaction.getAmount().negate(),
+                        transaction.getAmount().abs(),
+                        AccountStatus.BLOCKED
+                );
+            }
+            case REJECTED -> {
+                transaction.setStatus(TransactionStatus.REJECTED);
+                accountService.addAmount(accountId, transaction.getAmount().negate());
+                if (transactionRepository.findAllByAccountIdAndStatus(accountId, TransactionStatus.REJECTED).size() >= maxRejectedTransaction) {
+                    accountService.updateStatus(accountId, AccountStatus.ARRESTED);
+                }
+            }
         }
 
         transactionRepository.save(transaction);
@@ -171,8 +203,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.deleteByTransactionId(id);
     }
 
-    @Transactional(readOnly = true)
-    protected Transaction getEntityById(long id, long accountId) {
+    private Transaction getEntityById(long id, long accountId) {
         return transactionRepository.findByTransactionIdAndAccountId(id, accountId)
                 .orElseThrow(() -> new ServiceException("Transaction with id " + id + " not found for account with id " + accountId, HttpStatus.NOT_FOUND));
     }

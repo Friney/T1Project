@@ -11,6 +11,8 @@ public interface AccountService {
 
     List<AccountDto> getAll(long clientId);
 
+    List<AccountDto> getAllByStatus(AccountStatus status);
+
     AccountDto getById(long id, long clientId);
 
     AccountDto getOnlyById(long id);
@@ -20,6 +22,8 @@ public interface AccountService {
     AccountDto update(AccountUpdateRequest accountUpdateRequest, long id, long clientId);
 
     void addAmount(long id, BigDecimal amount);
+
+    void updateStatus(long id, AccountStatus status);
 
     void updateAccountForBlockedTransaction(long id, BigDecimal amount, BigDecimal frozenAmount, AccountStatus status);
 

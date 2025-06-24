@@ -91,8 +91,8 @@ public class KafkaConsumerConfiguration {
         DefaultErrorHandler handler =
                 new DefaultErrorHandler(new FixedBackOff(1000, 3));
         handler.addNotRetryableExceptions(IllegalStateException.class);
-        handler.setRetryListeners((record, ex, deliveryAttempt) ->
-                log.error("RetryListeners message = {}, offset = {} deliveryAttempt = {}", ex.getMessage(), record.offset(), deliveryAttempt));
+        handler.setRetryListeners((consumerRecord, ex, deliveryAttempt) ->
+                log.error("RetryListeners message = {}, offset = {} deliveryAttempt = {}", ex.getMessage(), consumerRecord.offset(), deliveryAttempt));
         return handler;
     }
 }
