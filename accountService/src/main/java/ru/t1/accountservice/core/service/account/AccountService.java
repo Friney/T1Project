@@ -11,6 +11,8 @@ public interface AccountService {
 
     List<AccountDto> getAll(long clientId);
 
+    List<AccountDto> getAllByStatus(AccountStatus status);
+
     AccountDto getById(long id, long clientId);
 
     AccountDto getOnlyById(long id);

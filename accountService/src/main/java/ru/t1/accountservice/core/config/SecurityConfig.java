@@ -40,7 +40,8 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         Paths.AUTH_V1 + "/login",
                                         Paths.AUTH_V1 + "/refresh",
-                                        Paths.AUTH_V1 + "/registration"
+                                        Paths.AUTH_V1 + "/registration",
+                                        "/actuator/**"
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )

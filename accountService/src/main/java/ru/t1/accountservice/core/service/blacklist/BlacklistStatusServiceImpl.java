@@ -15,7 +15,7 @@ import ru.t1.accountservice.core.exception.ServiceException;
 public class BlacklistStatusServiceImpl implements BlacklistStatusService {
 
     private final WebClient blacklistWebClient;
-    @Value("${t1.blacklist.url-get-status}")
+    @Value("${t1.blacklist.endpoints.get-status}")
     private String url;
 
 

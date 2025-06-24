@@ -46,9 +46,8 @@ public class TransactionServiceImpl implements TransactionService {
     private final KafkaTransactionAcceptProducer kafkaTransactionAcceptProducer;
     private final BlacklistStatusService blacklistStatusService;
 
-    @Value("${t1.transaction.max-retries}")
-    private long maxRetriesTransaction;
-
+    @Value("${t1.transaction.max-rejected}")
+    private long maxRejectedTransaction;
 
     @Override
     @Transactional(readOnly = true)
@@ -58,7 +57,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Cached(name = "transaction")
-    @Transactional(readOnly = true)
     public TransactionDto getById(long id, long accountId) {
         return transactionMapper.map(getEntityById(id, accountId));
     }
@@ -110,7 +108,8 @@ public class TransactionServiceImpl implements TransactionService {
             accountService.updateStatus(accountId, AccountStatus.BLOCKED);
             needSendToKafka = false;
         } else if (clientStatus.equals(ClientStatus.UNKNOWN)) {
-            if (blacklistStatusService.getBlacklistStatus(clientId, accountId).equals(ClientBlacklistStatus.BLACKLISTED)) {
+            boolean isBlacklisted = blacklistStatusService.getBlacklistStatus(clientId, accountId).equals(ClientBlacklistStatus.BLACKLISTED);
+            if (isBlacklisted) {
                 transactionStatus = TransactionStatus.REJECTED;
                 accountService.updateStatus(accountId, AccountStatus.BLOCKED);
                 clientService.updateStatus(clientId, ClientStatus.BLOCKED);
@@ -158,23 +157,24 @@ public class TransactionServiceImpl implements TransactionService {
         Long transactionId = transactionResultKafka.transactionId();
         TransactionResultStatus transactionResultStatus = transactionResultKafka.transactionResultStatus();
         Transaction transaction = getEntityById(transactionId, accountId);
-
-        if (transactionResultStatus == TransactionResultStatus.BLOCKED) {
-            transaction.setStatus(TransactionStatus.BLOCKED);
-            accountService.updateAccountForBlockedTransaction(
-                    accountId,
-                    transaction.getAmount().negate(),
-                    transaction.getAmount().abs(),
-                    AccountStatus.BLOCKED
-            );
-        } else if (transactionResultStatus == TransactionResultStatus.REJECTED) {
-            transaction.setStatus(TransactionStatus.REJECTED);
-            accountService.addAmount(accountId, transaction.getAmount().negate());
-            if (transactionRepository.findAllByStatus(TransactionStatus.REJECTED).size() >= maxRetriesTransaction) {
-                accountService.updateStatus(accountId, AccountStatus.ARRESTED);
+        switch (transactionResultStatus) {
+            case ACCEPTED -> transaction.setStatus(TransactionStatus.ACCEPTED);
+            case BLOCKED -> {
+                transaction.setStatus(TransactionStatus.BLOCKED);
+                accountService.updateAccountForBlockedTransaction(
+                        accountId,
+                        transaction.getAmount().negate(),
+                        transaction.getAmount().abs(),
+                        AccountStatus.BLOCKED
+                );
             }
-        } else {
-            transaction.setStatus(TransactionStatus.ACCEPTED);
+            case REJECTED -> {
+                transaction.setStatus(TransactionStatus.REJECTED);
+                accountService.addAmount(accountId, transaction.getAmount().negate());
+                if (transactionRepository.findAllByAccountIdAndStatus(accountId, TransactionStatus.REJECTED).size() >= maxRejectedTransaction) {
+                    accountService.updateStatus(accountId, AccountStatus.ARRESTED);
+                }
+            }
         }
 
         transactionRepository.save(transaction);
@@ -203,8 +203,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.deleteByTransactionId(id);
     }
 
-    @Transactional(readOnly = true)
-    protected Transaction getEntityById(long id, long accountId) {
+    private Transaction getEntityById(long id, long accountId) {
         return transactionRepository.findByTransactionIdAndAccountId(id, accountId)
                 .orElseThrow(() -> new ServiceException("Transaction with id " + id + " not found for account with id " + accountId, HttpStatus.NOT_FOUND));
     }

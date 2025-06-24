@@ -36,22 +36,24 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public List<AccountDto> getAllByStatus(AccountStatus status) {
+        return accountMapper.map(accountRepository.findAllByStatus(status));
+    }
+
+    @Override
     @Cached(name = "account")
-    @Transactional(readOnly = true)
     public AccountDto getById(long id, long clientId) {
         return accountMapper.map(getEntityById(id, clientId));
     }
 
     @Override
     @Cached(name = "account")
-    @Transactional(readOnly = true)
     public AccountDto getOnlyById(long id) {
         Account account = getEntityOnlyById(id);
         return accountMapper.map(account);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Long getClientIdByAccountId(long id) {
         Account account = getEntityOnlyById(id);
         return account.getClient().getClientId();
@@ -140,14 +142,12 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.existsByAccountId(id);
     }
 
-    @Transactional(readOnly = true)
-    protected Account getEntityById(long id, long clientId) {
+    private Account getEntityById(long id, long clientId) {
         return accountRepository.findByAccountIdAndClientId(id, clientId)
                 .orElseThrow(() -> new ServiceException("Account with id " + id + " not found for client with id " + clientId, HttpStatus.NOT_FOUND));
     }
 
-    @Transactional(readOnly = true)
-    protected Account getEntityOnlyById(long id) {
+    private Account getEntityOnlyById(long id) {
         return accountRepository.findByAccountId(id)
                 .orElseThrow(() -> new ServiceException("Account with id " + id + " not found", HttpStatus.NOT_FOUND));
     }

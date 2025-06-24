@@ -16,12 +16,29 @@ public class WebClientConfig {
     @Value("${t1.blacklist.password}")
     private String blacklistPassword;
 
+    @Value("${t1.unlock.base-url}")
+    private String unlockBaseUrl;
+    @Value("${t1.unlock.username}")
+    private String unlockUsername;
+    @Value("${t1.unlock.password}")
+    private String unlockPassword;
+
     @Bean
     public WebClient blacklistWebClient() {
         String auth = blacklistUsername + ":" + blacklistPassword;
         String encoded = Base64.getEncoder().encodeToString(auth.getBytes());
         return WebClient.builder()
                 .baseUrl(blacklistBaseUrl)
+                .defaultHeader("Authorization", "Basic " + encoded)
+                .build();
+    }
+
+    @Bean
+    public WebClient unlockWebClient() {
+        String auth = unlockUsername + ":" + unlockPassword;
+        String encoded = Base64.getEncoder().encodeToString(auth.getBytes());
+        return WebClient.builder()
+                .baseUrl(unlockBaseUrl)
                 .defaultHeader("Authorization", "Basic " + encoded)
                 .build();
     }

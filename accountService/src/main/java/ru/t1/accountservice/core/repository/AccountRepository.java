@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.t1.accountservice.core.entity.account.Account;
+import ru.t1.accountservice.core.entity.account.AccountStatus;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
@@ -17,6 +18,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     void deleteByAccountId(Long accountId);
 
     List<Account> findAllByClientId(Long clientId);
+
+    List<Account> findAllByStatus(AccountStatus status);
 
     Optional<Account> findByAccountId(Long accountId);
 
