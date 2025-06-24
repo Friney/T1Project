@@ -29,15 +29,19 @@ public class KafkaProducerConfiguration {
     private int retryBackoffMs;
 
     @Bean
-    public ProducerFactory<String, TransactionCreateRequest> producerCreateFactory() {
+    public <T> ProducerFactory<String, T> producerFactory() {
         Map<String, Object> config = getProducerConfig();
         return new DefaultKafkaProducerFactory<>(config);
     }
 
     @Bean
+    public ProducerFactory<String, TransactionCreateRequest> producerCreateFactory() {
+        return producerFactory();
+    }
+
+    @Bean
     public ProducerFactory<String, TransactionResultKafka> producerResultFactory() {
-        Map<String, Object> config = getProducerConfig();
-        return new DefaultKafkaProducerFactory<>(config);
+        return producerFactory();
     }
 
     @Bean

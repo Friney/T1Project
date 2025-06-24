@@ -35,7 +35,6 @@ public class AuthServiceImpl implements AuthService {
     public JwtAuthenticationDto login(LoginRequest loginRequest) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.login(), loginRequest.password()));
         UserDetails user = userService.loadUserByUsername(loginRequest.login());
-        // Мб тут проверить, что раз токена нет, то создать?
         Long userId = userService.getEntityByLogin(user.getUsername()).getId();
         if (!jwtVersionService.isExists(userId)) {
             jwtVersionService.createInitialVersion(userId);
@@ -92,6 +91,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserDto update(UserUpdateRequest userUpdateDto, UserDetails userDetails) {
         User user = userService.getEntityByLogin(userDetails.getUsername());
+        if (userService.isExistsByLogin(userUpdateDto.login()) && !userUpdateDto.login().equals(userDetails.getUsername())) {
+            throw new ServiceException("User with login '" + userUpdateDto.login() + "' already exists", HttpStatus.BAD_REQUEST);
+        }
         if (userUpdateDto.login() != null) {
             user.setLogin(userUpdateDto.login());
         }

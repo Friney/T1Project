@@ -32,11 +32,15 @@ public class LogDataSourceErrorAspect {
                 kafkaMetricProducer.sendMessage(dataSourceErrorLogDto, "DATA_SOURCE");
                 log.info("Log sent to Kafka");
             } catch (Exception ex) {
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                    log.error("Interrupted while sending to Kafka", ex);
+                }
                 log.error("Error sending log to Kafka -> {}", ex.getMessage());
                 dataSourceErrorLogService.save(dataSourceErrorLogDto);
                 log.info("Log saved to DB");
             }
-        } catch (Exception ex) {
+        } catch (RuntimeException ex) {
             log.error("Error while logging data source error -> {}", ex.getMessage());
         }
     }

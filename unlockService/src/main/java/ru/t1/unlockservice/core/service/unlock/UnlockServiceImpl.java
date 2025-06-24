@@ -1,5 +1,6 @@
 package ru.t1.unlockservice.core.service.unlock;
 
+import java.security.SecureRandom;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.t1.unlockservice.api.dto.unlock.UnlockDecision;
@@ -8,16 +9,18 @@ import ru.t1.unlockservice.api.dto.unlock.UnlockDecision;
 @Service
 public class UnlockServiceImpl implements UnlockService {
 
+    private final SecureRandom secureRandom = new SecureRandom();
+
     @Override
     public UnlockDecision requestUnlockClient(Long clientId) {
-        UnlockDecision decision = Math.random() < 0.6 ? UnlockDecision.REJECTED : UnlockDecision.UNLOCKED;
+        UnlockDecision decision = secureRandom.nextInt(10) < 6 ? UnlockDecision.REJECTED : UnlockDecision.UNLOCKED;
         log.info("Unlock decision for client {} is {}", clientId, decision);
         return decision;
     }
 
     @Override
     public UnlockDecision requestUnlockAccount(Long accountId) {
-        UnlockDecision decision = Math.random() < 0.6 ? UnlockDecision.REJECTED : UnlockDecision.UNLOCKED;
+        UnlockDecision decision = secureRandom.nextInt(10) < 6 ? UnlockDecision.REJECTED : UnlockDecision.UNLOCKED;
         log.info("Unlock decision for account {} is {}", accountId, decision);
         return decision;
     }

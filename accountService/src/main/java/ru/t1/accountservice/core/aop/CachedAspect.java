@@ -45,7 +45,7 @@ public class CachedAspect {
             }
         }
 
-        return computeAndCacheValue(proceedingJoinPoint, nameAndArgs, ttlMs);
+        return computeAndCacheValue(proceedingJoinPoint, nameAndArgs);
     }
 
     private void clearCacheForExpired() {
@@ -53,7 +53,7 @@ public class CachedAspect {
                 .removeIf(entry -> isCacheExpired(entry.getValue(), ttl.toMillis()));
     }
 
-    private Object computeAndCacheValue(ProceedingJoinPoint proceedingJoinPoint, NameAndArgs nameAndArgs, long ttlMs) throws Throwable {
+    private Object computeAndCacheValue(ProceedingJoinPoint proceedingJoinPoint, NameAndArgs nameAndArgs) throws Throwable {
         Object result = proceedingJoinPoint.proceed();
         log.info("Cache save {} for {}", result, nameAndArgs);
         caches.put(nameAndArgs, new CacheEntry(System.currentTimeMillis(), result));

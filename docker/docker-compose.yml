@@ -73,6 +73,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
+  t1_sonarqube:
+    image: sonarqube:25.4.0.105899-community
+    hostname: sonarqube
+    ports:
+      - "9001:9000"
+
 volumes:
   t1_postgres_data:
   t1_zookeeper_data:

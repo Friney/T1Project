@@ -21,7 +21,6 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public User getEntityByLogin(String login) {
         return userRepository.findByLogin(login)
                 .orElseThrow(() -> new ServiceException("User with login '" + login + "' not found", HttpStatus.NOT_FOUND));
@@ -32,7 +31,7 @@ public class UserServiceImpl implements UserService {
     @LogDataSourceError
     @Transactional
     public UserDto create(User userForCreate) {
-        if (userRepository.existsByLogin(userForCreate.getLogin())) {
+        if (isExistsByLogin(userForCreate.getLogin())) {
             throw new ServiceException("User with login '" + userForCreate.getLogin() + "' already exists", HttpStatus.BAD_REQUEST);
         }
 
@@ -58,7 +57,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    public boolean isExistsByLogin(String login) {
+        return userRepository.existsByLogin(login);
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) {
         User user = getEntityByLogin(username);
 
